@@ -1076,7 +1076,7 @@
 import flvjs from 'flv.js'
 import { getDeviceList, previewDeviceMonitor } from '@/api/device'
 import { getAlgorithmList, getAlgorithmTargets } from '@/api/algorithm'
-import { createDeployment, getDeploymentDetail, updateDeployment } from '@/api/deployment'
+import { createDeployment, getDeploymentDetail, updateDeployment, updateDeploymentLiveOutput } from '@/api/deployment'
 import { OVERLAY_DELAY_DEFAULT_MS, loadOverlayDelayMs } from '@/utils/systemRuntimeConfig'
 
 export default {
@@ -1514,13 +1514,19 @@ export default {
 
         const status = String(this.getFieldValue(detail, 'status') || '').toUpperCase()
         const isRunning = status === 'RUNNING'
-        const pushEnabled = this.toBoolean(this.getFieldValue(detail, 'pushEnabled', 'push_enabled'), false)
-        const algorithmStreamUrl = this.getFieldValue(detail, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
-
-        if (isRunning && pushEnabled && algorithmStreamUrl) {
-          this.streamUrl = algorithmStreamUrl
-          this.playStream(algorithmStreamUrl)
-          return
+        if (isRunning) {
+          const liveOutputResponse = await updateDeploymentLiveOutput(this.deploymentId, {
+            videoEnabled: true,
+            liveEventEnabled: true,
+            wsEventFps: 8
+          })
+          const liveOutputData = (liveOutputResponse && liveOutputResponse.data) || liveOutputResponse || {}
+          const algorithmStreamUrl = this.getFieldValue(liveOutputData, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
+          if (algorithmStreamUrl) {
+            this.streamUrl = algorithmStreamUrl
+            this.playStream(algorithmStreamUrl)
+            return
+          }
         }
 
         if (deviceId) {

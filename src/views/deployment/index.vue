@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import { getDeploymentDetail, listDeployments, startDeployment, stopDeployment } from '@/api/deployment'
+import { getDeploymentDetail, listDeployments, startDeployment, stopDeployment, updateDeploymentLiveOutput } from '@/api/deployment'
 import { previewDeviceMonitor } from '@/api/device'
 import { upsertScreenWallStream } from '@/api/screenWall'
 
@@ -261,18 +261,18 @@ export default {
       const deviceId = this.getFieldValue(detail, 'deviceId', 'device_id', 'apeId', 'ape_id') || this.getFieldValue(row, 'deviceId', 'device_id', 'apeId', 'ape_id') || ''
       const slotIndex = this.getFieldValue(detail, 'slotIndex', 'slot_index')
       const fallbackSlotIndex = this.getFieldValue(row, 'slotIndex', 'slot_index')
-      const taskPushEnabled = this.toBoolean(this.getFieldValue(detail, 'taskPushEnabled', 'task_push_enabled', 'pushEnabled', 'push_enabled'), false)
-      const algorithmStreamUrl = this.getFieldValue(detail, 'algorithmStreamUrl', 'algorithm_stream_url') || this.getFieldValue(row, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
-      let playUrl = ''
-
-      if (taskPushEnabled && algorithmStreamUrl) {
-        playUrl = algorithmStreamUrl
-      } else {
-        playUrl = await this.resolveDevicePreviewPlayUrl(deviceId)
-      }
+      const liveOutputResponse = await updateDeploymentLiveOutput(sourceId, {
+        videoEnabled: true,
+        liveEventEnabled: true,
+        wsEventFps: 8
+      })
+      const liveOutputData = (liveOutputResponse && liveOutputResponse.data) || liveOutputResponse || {}
+      const algorithmStreamUrl = this.getFieldValue(liveOutputData, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
+      const taskPushEnabled = Boolean(algorithmStreamUrl)
+      let playUrl = algorithmStreamUrl
 
       if (!playUrl) {
-        playUrl = this.extractPlayUrl(detail) || this.extractPlayUrl(row)
+        playUrl = await this.resolveDevicePreviewPlayUrl(deviceId)
       }
 
       return {

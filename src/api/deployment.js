@@ -40,6 +40,15 @@ export function stopDeployment(id) {
   })
 }
 
+export function updateDeploymentLiveOutput(id, data) {
+  return request({
+    url: `/deployments/${id}/live-output`,
+    method: 'post',
+    data,
+    timeout: 23000
+  })
+}
+
 export function getDeploymentDetail(id) {
   return request({
     url: `/deployments/${id}`,

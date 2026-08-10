@@ -86,7 +86,7 @@
 <script>
 import flvjs from 'flv.js'
 import WarningHistory from './warning-history.vue'
-import { getDeploymentDetail } from '@/api/deployment'
+import { getDeploymentDetail, updateDeploymentLiveOutput } from '@/api/deployment'
 import { getScreenWallStreams, normalizeScreenWallStream } from '@/api/screenWall'
 import { OVERLAY_DELAY_DEFAULT_MS, loadOverlayDelayMs } from '@/utils/systemRuntimeConfig'
 
@@ -311,19 +311,21 @@ export default {
 
       try {
         const detail = this.extractResponseData(await getDeploymentDetail(stream.sourceId))
-        const taskPushEnabled = this.toBoolean(this.getFieldValue(detail, 'pushEnabled', 'push_enabled'), false)
-        const frontendOverlayEnabled = taskPushEnabled
-          ? false
-          : this.toBoolean(this.getFieldValue(detail, 'frontendOverlayEnabled', 'frontend_overlay_enabled'), true)
-        const algorithmStreamUrl = this.getFieldValue(detail, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
+        const liveOutputResponse = await updateDeploymentLiveOutput(stream.sourceId, {
+          videoEnabled: true,
+          liveEventEnabled: true,
+          wsEventFps: 8
+        })
+        const liveOutputData = this.extractResponseData(liveOutputResponse)
+        const algorithmStreamUrl = this.getFieldValue(liveOutputData, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
 
         return {
           ...stream,
           deviceId: this.getFieldValue(detail, 'deviceId', 'device_id', 'apeId', 'ape_id') || stream.deviceId || '',
           name: this.getFieldValue(detail, 'taskName', 'task_name', 'title', 'name') || stream.name,
-          playUrl: taskPushEnabled && algorithmStreamUrl ? algorithmStreamUrl : stream.playUrl,
-          taskPushEnabled,
-          frontendOverlayEnabled
+          playUrl: algorithmStreamUrl || stream.playUrl,
+          taskPushEnabled: Boolean(algorithmStreamUrl),
+          frontendOverlayEnabled: false
         }
       } catch (error) {
         return {
