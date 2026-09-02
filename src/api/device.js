@@ -99,3 +99,28 @@ export function previewDeviceMonitor(apeId) {
     method: 'get'
   })
 }
+
+/**
+ * 同步 SIP/GB 平台目录为国标业务设备（仅管理员）。
+ * 不带目录快照时后端只做安全对账（不新增、不剔除）。
+ */
+export function syncGb28181Devices(zlmServerId = 1) {
+  return request({
+    url: `/waring/device/gb28181/catalog/sync`,
+    method: 'post',
+    params: { zlmServerId },
+    timeout: 30000
+  })
+}
+
+/**
+ * 仅按显式媒体绑定刷新 GB28181 设备在线/可播放状态（仅管理员）。
+ */
+export function refreshGb28181Status(zlmServerId = 1) {
+  return request({
+    url: `/waring/device/gb28181/status/refresh`,
+    method: 'post',
+    params: { zlmServerId },
+    timeout: 30000
+  })
+}

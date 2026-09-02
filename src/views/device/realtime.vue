@@ -24,6 +24,18 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="接入类型" prop="device_type">
+        <el-select
+          v-model="queryParams.device_type"
+          placeholder="全部"
+          clearable
+          style="width: 140px"
+          @change="handleQuery"
+        >
+          <el-option label="RTSP" value="RTSP" />
+          <el-option label="GB28181" value="GB28181" />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -35,6 +47,11 @@
       <el-table-column label="设备编码" prop="ape_id" align="center" :show-overflow-tooltip="true" />
       <el-table-column label="IP地址" prop="ip_addr" align="center" :show-overflow-tooltip="true" />
       <el-table-column label="端口号" prop="port" align="center" />
+      <el-table-column label="接入类型" prop="device_type" align="center" width="110">
+        <template slot-scope="scope">
+          <el-tag size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="设备类型" prop="sub_type" align="center">
         <template slot-scope="scope">
           <span>{{ returnType(scope.row.sub_type) }}</span>
@@ -126,7 +143,8 @@ export default {
         org_index: undefined,
         monitor_status: 'RUNNING',
         ape_id: undefined,
-        name: undefined
+        name: undefined,
+        device_type: undefined
       },
       deptOptions: undefined,
       queryDeptOptions: [],
@@ -203,6 +221,15 @@ export default {
     getMonitorState(row) {
       const raw = row.monitor_status || row.monitorStatus || row.run_status || row.runStatus || row.runtime_status || row.runtimeStatus || row.status
       return String(raw || 'UNKNOWN').toUpperCase()
+    },
+    formatDeviceType(value) {
+      if (value === 'GB28181') {
+        return '国标'
+      }
+      return value || 'RTSP'
+    },
+    formatDeviceTypeTag(value) {
+      return value === 'GB28181' ? 'warning' : 'info'
     },
     returnType(type) {
       switch (String(type || '')) {
@@ -301,6 +328,7 @@ export default {
     resetQuery() {
       this.resetForm('queryForm')
       this.queryParams.monitor_status = 'RUNNING'
+      this.queryParams.device_type = undefined
       this.handleQuery()
     },
     extractActionResult(response) {

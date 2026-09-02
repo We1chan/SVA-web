@@ -35,6 +35,11 @@
             <el-table-column label="设备编码" prop="ape_id" align="center" width="180px"/>
             <el-table-column label="IP地址" prop="ip_addr" align="center" width="130px"/>
             <el-table-column label="端口号" prop="port" align="center" width="70px"/>
+            <el-table-column label="接入类型" prop="device_type" width="100px" align="center">
+              <template slot-scope="scope">
+                <el-tag size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
+              </template>
+            </el-table-column>
             <el-table-column label="设备类型" prop="sub_type" align="center">
               <template slot-scope="scope">
                 <span>{{ returnType(scope.row.sub_type) }}</span>
@@ -148,6 +153,17 @@ export default {
       this.resetForm('queryForm');
       this.queryParams.org_index = undefined;
       this.handleQuery();
+    },
+
+    formatDeviceType(value) {
+      if (value === 'GB28181') {
+        return '国标';
+      }
+      return value || 'RTSP';
+    },
+
+    formatDeviceTypeTag(value) {
+      return value === 'GB28181' ? 'warning' : 'info';
     },
 
     returnType(type) {

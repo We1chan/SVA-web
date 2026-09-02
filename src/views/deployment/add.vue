@@ -138,7 +138,13 @@
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
-                />
+                >
+                  <span>
+                    <el-tag size="mini" :type="item.typeTagType" effect="plain">{{ item.typeText }}</el-tag>
+                    <span style="margin: 0 6px">{{ item.displayLabel }}</span>
+                    <el-tag size="mini" :type="item.onlineTagType" effect="plain">{{ item.onlineText }}</el-tag>
+                  </span>
+                </el-option>
               </el-select>
             </el-form-item>
 
@@ -1399,9 +1405,20 @@ export default {
           const apeId = item.apeId || item.ape_id || item.deviceId || ''
           const name = item.name || item.deviceName || item.device_name || apeId
           if (!apeId) return null
+          const displayLabel = `${name} (${apeId})`
+          const isGb = String(item.device_type || '').toUpperCase() === 'GB28181'
+          const onlineRaw = String(item.is_online === undefined || item.is_online === null ? '' : item.is_online)
+          const onlineMap = { '0': '登录中', '1': '在线', '2': '离线', '9': '异常' }
+          const onlineText = onlineMap[onlineRaw] || (onlineRaw === '' ? '状态未知' : `状态${onlineRaw}`)
+          const onlineTagType = onlineRaw === '1' ? 'success' : (onlineRaw === '2' || onlineRaw === '9') ? 'danger' : 'info'
           return {
             value: apeId,
-            label: `${name} (${apeId})`,
+            label: `${isGb ? '[国标]' : '[RTSP]'} ${displayLabel}（${onlineText}）`,
+            displayLabel,
+            typeText: isGb ? '国标' : 'RTSP',
+            typeTagType: isGb ? 'warning' : 'info',
+            onlineText,
+            onlineTagType,
             raw: item
           }
         })
