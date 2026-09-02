@@ -10,6 +10,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const name = process.env.VUE_APP_TITLE || 'AI视频安全生产分析系统' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 80 // 端口
+const backendTarget = process.env.VUE_APP_BACKEND_URL || 'http://localhost:9114'
 
 // vue.config.js 配置说明
 //官方vue.config.js 参考文档 https://cli.vuejs.org/zh/config/#css-loaderoptions
@@ -36,14 +37,14 @@ module.exports = {
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
-        target: `http://localhost:9114`,
+        target: backendTarget,
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
       },
       '/websocket': {
-        target: `http://localhost:9114`,
+        target: backendTarget,
         changeOrigin: true,
         ws: true
       }
