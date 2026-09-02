@@ -15,6 +15,15 @@
         </el-select>
       </el-form-item>
 
+      <el-form-item>
+        <el-button v-if="sleepDutyShortcutActive" type="warning" size="mini" icon="el-icon-moon"
+                   @click="clearSleepDutyShortcut">睡岗告警（筛选中）
+        </el-button>
+        <el-button v-else type="warning" plain size="mini" icon="el-icon-moon" @click="applySleepDutyShortcut">
+          睡岗快捷筛选
+        </el-button>
+      </el-form-item>
+
       <el-form-item label="处理状态" prop="is_handle">
         <el-select v-model="querySpecificParams.is_handle" placeholder="处理状态" clearable style="width: 200px">
           <el-option v-for="op in isHandleOptions" :key="op.value" :label="op.label" :value="op.value"/>
@@ -46,7 +55,22 @@
       <el-table-column type="selection" width="55"/>
       <el-table-column label="序号" type="index" width="55"/>
       <el-table-column label="报警类型" prop="alarm_type_name" :show-overflow-tooltip="true" width="200"
-                       align="center"/>
+                       align="center">
+        <template slot-scope="scope">
+          <el-tag v-if="getAlarmTypeTagType(scope.row) !== 'info'" :type="getAlarmTypeTagType(scope.row)" size="mini">
+            {{ scope.row.alarm_type_name }}
+          </el-tag>
+          <span v-else>{{ scope.row.alarm_type_name }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="设备类型" prop="device_type" width="110" align="center">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.device_type === 'GB28181'" type="success" size="mini">GB28181</el-tag>
+          <el-tag v-else-if="scope.row.device_type === 'RTSP'" type="info" size="mini">RTSP</el-tag>
+          <span v-else>{{ scope.row.device_type || '---' }}</span>
+        </template>
+      </el-table-column>
 
       <el-table-column label="设备通道名称" prop="device_name" :show-overflow-tooltip="true" width="300"/>
       <el-table-column label="组织名称" prop="org_name" :show-overflow-tooltip="true" width="180"/>
@@ -99,8 +123,16 @@
           <div class="grid-content bg-purple">
             <div class="block">
               <el-image v-if="detailsInfo.picture_absolute_url" :src="detailsInfo.picture_absolute_url"
-                        :preview-src-list="[detailsInfo.picture_absolute_url]"></el-image>
-              <div v-else>暂无抓拍</div>
+                        :preview-src-list="[detailsInfo.picture_absolute_url]">
+                <div slot="error" class="snapshot-placeholder">
+                  <i class="el-icon-picture-outline snapshot-placeholder-icon"/>
+                  <span>抓拍图加载失败</span>
+                </div>
+              </el-image>
+              <div v-else class="snapshot-placeholder">
+                <i class="el-icon-picture-outline snapshot-placeholder-icon"/>
+                <span>暂无抓拍</span>
+              </div>
             </div>
             <div class="detail-video-toolbar">
               <el-button size="mini" type="primary" icon="el-icon-video-play" :loading="detailVideoLoading"
@@ -124,6 +156,11 @@
               <el-descriptions-item label="报警时间"> {{ detailsInfo.alarm_time }}</el-descriptions-item>
               <el-descriptions-item label="设备通道">
                 <el-tag size="small"> {{ detailsInfo.device_name }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="设备类型">
+                <el-tag v-if="detailsInfo.device_type === 'GB28181'" size="small" type="success">GB28181</el-tag>
+                <el-tag v-else-if="detailsInfo.device_type === 'RTSP'" size="small" type="info">RTSP</el-tag>
+                <span v-else>{{ detailsInfo.device_type || '---' }}</span>
               </el-descriptions-item>
               <el-descriptions-item label="行为类型"> {{ getBehaviorTypeLabel(detailsInfo.sva_behavior_type) }}</el-descriptions-item>
               <el-descriptions-item label="规则ID"> {{ detailsInfo.sva_rule_id || '---' }}</el-descriptions-item>
@@ -305,6 +342,9 @@ export default {
   computed: {
     deviceContainer() {
       return this.$refs["warningContainer"];
+    },
+    sleepDutyShortcutActive() {
+      return String(this.querySpecificParams.alarm_type_name || '').trim() === '睡岗告警';
     },
   },
 
@@ -678,6 +718,8 @@ export default {
       if (behaviorType === 'low_speed') return '低速';
       if (behaviorType === 'loitering') return '徘徊';
       if (behaviorType === 'absence') return '缺席';
+      if (behaviorType === 'sleep_duty') return '睡岗';
+      if (behaviorType === 'sleep') return '睡觉';
       if (behaviorType === 'count_threshold') return '数量阈值';
       if (behaviorType === 'occupancy') return '占用';
       if (behaviorType === 'direction_move') return '定向通行';
@@ -686,6 +728,26 @@ export default {
       if (behaviorType === 'relation_apart') return '目标远离';
       if (behaviorType === 'relation_not_contains') return '目标未包含';
       return '---';
+    },
+
+    getAlarmTypeTagType(row = {}) {
+      const alarmType = String(row.alarm_type || '').trim();
+      const alarmTypeName = String(row.alarm_type_name || '').trim();
+      if (alarmType === 'SLEEP_DUTY' || alarmTypeName === '睡岗告警') return 'warning';
+      if (alarmType === 'SVA_ABSENCE' || alarmTypeName === '缺席告警' || alarmTypeName === '离岗告警') return 'danger';
+      return 'info';
+    },
+
+    applySleepDutyShortcut() {
+      this.querySpecificParams.alarm_type_name = '睡岗告警';
+      this.queryParams.pageNum = 1;
+      this.fetchData();
+    },
+
+    clearSleepDutyShortcut() {
+      this.querySpecificParams.alarm_type_name = undefined;
+      this.queryParams.pageNum = 1;
+      this.fetchData();
     },
 
     getEventStateLabel(eventState) {
@@ -801,5 +863,24 @@ export default {
 
 .detail-handle-alert {
   margin: 0 16px 16px 40px;
+}
+
+.snapshot-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  border: 1px dashed #dcdfe6;
+  border-radius: 4px;
+  color: #909399;
+  background: #fafafa;
+  font-size: 13px;
+}
+
+.snapshot-placeholder-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+  color: #c0c4cc;
 }
 </style>
