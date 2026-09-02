@@ -10,6 +10,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const name = process.env.VUE_APP_TITLE || 'AI视频安全生产分析系统' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 80 // 端口
+// 本地验收可覆盖后端端口（例如 Windows 排除 9114 时使用 9214）；生产代理配置不受影响。
 const backendTarget = process.env.VUE_APP_BACKEND_URL || 'http://localhost:9114'
 
 // vue.config.js 配置说明
