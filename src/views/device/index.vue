@@ -53,10 +53,11 @@
                 <span>{{ returnStatus(scope.row.is_online) }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" align="center" fixed="right" width="300" class-name="small-padding fixed-width operation-column">
+            <el-table-column label="操作" align="center" fixed="right" width="380" class-name="small-padding fixed-width operation-column">
               <template slot-scope="scope">
                 <el-button size="mini" type="text" icon="el-icon-video-play" @click="startMonitor(scope.row)">启动监控</el-button>
                 <el-button size="mini" type="text" icon="el-icon-video-pause" @click="stopMonitor(scope.row)">停止监控</el-button>
+                <el-button size="mini" type="text" icon="el-icon-video-camera" @click="previewMonitor(scope.row)">预览视频</el-button>
                 <el-button size="mini" type="text" icon="el-icon-zoom-in" @click="warningHistory(scope.row)">历史报警
                 </el-button>
               </template>
@@ -71,16 +72,25 @@
 
     <devicewarning v-show="!deviceListShow" @closeWarning="deviceListShow = true" :warningTitle="warningTitle"
                    :device_id="device_id"></devicewarning>
+
+    <r-t-s-p-player
+      v-show="viewProof"
+      :viewProof="viewProof"
+      :rtspUrl="previewUrl"
+      title="实时监控预览"
+      @closeProof="viewProof = false"
+    />
   </div>
 </template>
 
 <script>
 import {deptTreeSelect} from "@/api/system/user";
 import devicewarning from "./components/device-warning.vue"
-import {getDeviceList, startDeviceMonitor, stopDeviceMonitor} from "@/api/device";
+import RTSPPlayer from "@/components/RTSPPlayer";
+import {getDeviceList, previewDeviceMonitor, startDeviceMonitor, stopDeviceMonitor} from "@/api/device";
 
 export default {
-  components: {devicewarning},
+  components: {devicewarning, RTSPPlayer},
   data() {
     return {
       loading: true,
@@ -95,8 +105,10 @@ export default {
       },
       deviceList: [],
       deviceListShow: true,
+      viewProof: false,
+      previewUrl: "",
       onlineOptions: [
-        {value: "0", label: "登录中"},
+        {value: "0", label: "离线/停用"},
         {value: "1", label: "在线/启用"},
         {value: "2", label: "离线/停用"},
         {value: "9", label: "其他/异常"},
@@ -186,7 +198,7 @@ export default {
     returnStatus(status) {
       switch (status) {
         case "0":
-          return "登录中";
+          return "离线/停用";
         case "1":
           return "在线/启用";
         case "2":
@@ -244,7 +256,7 @@ export default {
       try {
         const response = await startDeviceMonitor(row.ape_id);
         const payload = (response && response.data && typeof response.data === 'object') ? response.data : {};
-        const shortMessage = payload.shortMessage || '已启动监控，请到“实时监控”菜单继续操作。';
+        const shortMessage = payload.shortMessage || '已启动监控，可在本页预览视频。';
         this.$message({
           type: Object.prototype.hasOwnProperty.call(payload, 'success') && !payload.success ? 'warning' : 'success',
           message: shortMessage
@@ -267,6 +279,41 @@ export default {
         });
       } catch (error) {
         this.$modal.msgError('停止监控失败，请稍后重试');
+      }
+    },
+
+    extractPreviewUrl(response) {
+      const data = response && response.data ? response.data : response;
+      if (!data) return "";
+      return data.playUrl || data.previewUrl || data.url || data.streamUrl || data.rtspUrl || data.flvUrl || "";
+    },
+
+    normalizeLocalPreviewUrl(url) {
+      if (!url || !["localhost", "127.0.0.1"].includes(window.location.hostname)) return url;
+      try {
+        const parsed = new URL(url);
+        if (["http:", "https:", "ws:", "wss:"].includes(parsed.protocol)) {
+          parsed.hostname = window.location.hostname;
+          return parsed.toString();
+        }
+      } catch (error) {
+        return url;
+      }
+      return url;
+    },
+
+    async previewMonitor(row) {
+      try {
+        const response = await previewDeviceMonitor(row.ape_id);
+        const playUrl = this.normalizeLocalPreviewUrl(this.extractPreviewUrl(response));
+        if (!playUrl) {
+          this.$modal.msgWarning("暂无可播放地址，请先启动监控后重试");
+          return;
+        }
+        this.previewUrl = playUrl;
+        this.viewProof = true;
+      } catch (error) {
+        this.$modal.msgError((error && error.message) || "获取预览地址失败，请稍后重试");
       }
     },
 
