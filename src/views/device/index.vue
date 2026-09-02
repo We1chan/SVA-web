@@ -1,4 +1,8 @@
-<!-- 设备管理 -->
+<!--
+  模块：设备管理 / 流媒体预览入口。
+  职责：统一展示 DIRECT、PLATFORM 与 GB28181 设备，并调用后端完成监控启停和预览。
+  边界：本页面不直接访问 WVP；国标 SIP/点播状态均以后端返回结果为准。
+-->
 <template>
   <div class="app-container" ref="deviceContainer">
     <div v-show="deviceListShow">
@@ -254,6 +258,7 @@ export default {
 
     async startMonitor(row) {
       try {
+        // 后端按 stream_source_type 分派 DIRECT 代理或 GB28181 INVITE，页面保持统一操作入口。
         const response = await startDeviceMonitor(row.ape_id);
         const payload = (response && response.data && typeof response.data === 'object') ? response.data : {};
         const shortMessage = payload.shortMessage || '已启动监控，可在本页预览视频。';
@@ -289,6 +294,7 @@ export default {
     },
 
     normalizeLocalPreviewUrl(url) {
+      // 仅在本机验收时把 WVP 返回的回环地址对齐到当前浏览器主机，生产地址保持不变。
       if (!url || !["localhost", "127.0.0.1"].includes(window.location.hostname)) return url;
       try {
         const parsed = new URL(url);
@@ -305,6 +311,7 @@ export default {
     async previewMonitor(row) {
       try {
         const response = await previewDeviceMonitor(row.ape_id);
+        // GB28181 必须先启动监控生成临时播放地址；DIRECT 设备仍由后端提供原兼容地址。
         const playUrl = this.normalizeLocalPreviewUrl(this.extractPreviewUrl(response));
         if (!playUrl) {
           this.$modal.msgWarning("暂无可播放地址，请先启动监控后重试");
