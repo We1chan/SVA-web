@@ -19,6 +19,7 @@
 <script>
 import flvjs from 'flv.js'
 import { toBrowserPlayableUrl } from '@/utils/media-url'
+import { createLiveFlvPlayer, destroyLiveFlvPlayer } from '@/utils/live-flv-player'
 
 export default {
   name: 'Player',
@@ -117,14 +118,7 @@ export default {
       if (this.flvPlayer != null) this.closeFLVPlayer(true)
 
       if (flvjs.isSupported()) {
-        this.flvPlayer = flvjs.createPlayer({
-          isLive: true,
-          type: 'flv',
-          url: url
-        })
-        this.flvPlayer.attachMediaElement(videoElement)
-        this.flvPlayer.load()
-        this.flvPlayer.play()
+        this.flvPlayer = createLiveFlvPlayer(videoElement, url)
       }
     },
 
@@ -154,28 +148,16 @@ export default {
 
     closeFLVPlayer(realClose) {
       const videoElement = this.$refs.flvVideo
-      if (this.flvPlayer != null) {
-        if (realClose === true) {
-          console.log('正在销毁播放器……')
-          this.flvPlayer.unload()
-          this.flvPlayer.detachMediaElement()
-          this.flvPlayer.destroy()
-          this.flvPlayer = null
-          console.log('销毁完毕……')
-        } else {
-          this.flvPlayer.pause()
-          this.flvPlayer.muted = true // 静音
-        }
+      if (realClose === true) {
+        destroyLiveFlvPlayer(this.flvPlayer, videoElement)
+        this.flvPlayer = null
+        return
       }
-
+      if (this.flvPlayer != null) {
+        this.flvPlayer.pause()
+      }
       if (videoElement) {
-        if (realClose === true) {
-          videoElement.pause()
-          videoElement.removeAttribute('src')
-          videoElement.load()
-        } else {
-          videoElement.pause()
-        }
+        videoElement.pause()
       }
     },
 

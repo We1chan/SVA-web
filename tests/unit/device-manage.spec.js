@@ -177,6 +177,23 @@ describe('DeviceManage GB28181 适配', () => {
     wrapper.destroy()
   })
 
+  it('新增时可选择 GB28181 或 RTSP 接入类型', async () => {
+    const wrapper = createWrapper()
+    await flushAll()
+    wrapper.vm.handleAdd()
+    await wrapper.vm.$nextTick()
+    const typeSelect = wrapper.vm.$el.querySelector('.el-dialog')
+    expect(wrapper.vm.isEdit).toBe(false)
+    wrapper.vm.handleDeviceTypeChange('GB28181')
+    expect(wrapper.vm.form.device_type).toBe('GB28181')
+    expect(wrapper.vm.form.stream_source_type).toBe('PLATFORM')
+    wrapper.vm.handleDeviceTypeChange('RTSP')
+    expect(wrapper.vm.form.device_type).toBe('RTSP')
+    expect(wrapper.vm.form.stream_source_type).toBe('DIRECT')
+    expect(typeSelect).toBeTruthy()
+    wrapper.destroy()
+  })
+
   it('RTSP 手动新增默认接入类型 RTSP、格式化为 RTSP 标签', async () => {
     const wrapper = createWrapper()
     await flushAll()

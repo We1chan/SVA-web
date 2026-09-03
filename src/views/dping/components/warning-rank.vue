@@ -40,10 +40,16 @@ export default {
       this.pageflag = true
       const response = await getRanking(this.orgIndex)
       if (response.code !== 200) throw new Error(response.msg)
-      response.data.org.map(item => {
-        this.orgData.xData.push(item.num)
-        this.orgData.yData.push(item.dept_name)
-      })
+      const orgs = Array.isArray(response.data && response.data.org) ? response.data.org : []
+      orgs
+        .filter(item => {
+          const name = String(item.dept_name || item.org_name || item.team || '').trim()
+          return name && !name.includes('验收组') && name !== '验收'
+        })
+        .forEach(item => {
+          this.orgData.xData.push(item.num)
+          this.orgData.yData.push(item.dept_name || item.org_name || item.team)
+        })
 
       this.initOrgEcharts()
     },

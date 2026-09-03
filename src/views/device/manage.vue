@@ -208,7 +208,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="接入类型" prop="device_type">
-              <el-select v-model="form.device_type" disabled placeholder="接入类型" style="width: 100%">
+              <el-select v-model="form.device_type" :disabled="isEdit" placeholder="请选择接入类型" style="width: 100%" @change="handleDeviceTypeChange">
                 <el-option label="RTSP" value="RTSP" />
                 <el-option label="GB28181" value="GB28181" />
               </el-select>
@@ -228,29 +228,29 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="平台编码">
-              <el-input v-model="form.gb_platform_id" disabled />
+              <el-input v-model="form.gb_platform_id" :disabled="isEdit" placeholder="请输入SIP平台编码" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="设备国标编码">
-              <el-input v-model="form.gb_device_id" disabled />
+              <el-input v-model="form.gb_device_id" :disabled="isEdit" placeholder="请输入设备国标编码" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="通道国标编码">
-              <el-input v-model="form.gb_channel_id" disabled />
+              <el-input v-model="form.gb_channel_id" :disabled="isEdit" placeholder="请输入通道国标编码" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="预览地址">
-              <el-input v-model="form.play_url" disabled />
+              <el-input v-model="form.play_url" :disabled="isEdit" placeholder="可选，国标点播后由平台回填" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
             <el-form-item label="设备编码" prop="ape_id">
-              <el-input v-model="form.ape_id" :disabled="isEdit" :placeholder="form.stream_source_type === 'DIRECT' ? 'DIRECT 默认自动生成，可手动修改' : '请输入设备编码'">
+              <el-input v-model="form.ape_id" :disabled="isEdit" :placeholder="form.device_type === 'GB28181' ? '请输入国标设备编码' : (form.stream_source_type === 'DIRECT' ? 'DIRECT 默认自动生成，可手动修改' : '请输入设备编码')">
                 <el-button
                   v-if="form.stream_source_type === 'DIRECT' && !isEdit"
                   slot="append"
@@ -589,6 +589,31 @@ export default {
     refreshApeId() {
       this.form.ape_id = this.generateApeId()
     },
+    handleDeviceTypeChange(value) {
+      const type = String(value || 'RTSP').toUpperCase()
+      this.form.device_type = type
+      if (type === 'GB28181') {
+        this.form.stream_source_type = 'PLATFORM'
+        this.form.direct_source_url = undefined
+        if (!this.isEdit && this.form.ape_id && String(this.form.ape_id).startsWith('cam')) {
+          this.form.ape_id = undefined
+        }
+      } else {
+        this.form.stream_source_type = 'DIRECT'
+        this.form.gb_platform_id = undefined
+        this.form.gb_device_id = undefined
+        this.form.gb_channel_id = undefined
+        this.form.play_url = undefined
+        if (!this.isEdit && !this.form.ape_id) {
+          this.form.ape_id = this.generateApeId()
+        }
+      }
+      this.$nextTick(() => {
+        if (this.$refs.form) {
+          this.$refs.form.clearValidate(['direct_source_url', 'ape_id'])
+        }
+      })
+    },
     handleSourceTypeChange(value) {
       const normalized = String(value || 'DIRECT').toUpperCase()
       this.form.stream_source_type = normalized
@@ -693,8 +718,11 @@ export default {
     buildSubmitPayload() {
       const payload = Object.assign({}, this.form)
       if (payload.device_type === 'GB28181') {
-        // 只提交可编辑的业务信息，避免旧页面数据覆盖平台已同步的身份和状态。
-        ['direct_source_url', 'gb_platform_id', 'gb_device_id', 'gb_channel_id', 'play_url', 'is_online', 'monitor_status', 'last_seen_at', 'sync_source', 'zlm_server_id', 'zlm_app', 'zlm_stream', 'zlm_vhost'].forEach(key => { delete payload[key] })
+        delete payload.direct_source_url
+        if (this.isEdit) {
+          // 编辑已同步国标设备时，不覆盖平台目录身份和在线状态。
+          ['gb_platform_id', 'gb_device_id', 'gb_channel_id', 'play_url', 'is_online', 'monitor_status', 'last_seen_at', 'sync_source', 'zlm_server_id', 'zlm_app', 'zlm_stream', 'zlm_vhost'].forEach(key => { delete payload[key] })
+        }
       }
       return payload
     },

@@ -58,7 +58,16 @@ export default {
         const res = await getAlarmPhoto()
         console.log(res, 'res')
         if (Number(res.code) !== 200) throw new Error(res.msg)
-        this.deviceImages = res.data
+        const list = Array.isArray(res.data) ? res.data : []
+        this.deviceImages = list.filter(item => {
+          const type = String(item.alarm_type || '').trim().toUpperCase()
+          const name = String(item.alarm_type_name || '').trim()
+          const behavior = String(item.sva_behavior_type || '').trim().toLowerCase()
+          if (name.includes('停留') || type === 'SVA_DWELL' || behavior === 'dwell') {
+            return false
+          }
+          return type === 'SLEEP_DUTY' || name.includes('睡岗') || behavior === 'sleep_duty' || behavior === 'sleep'
+        })
       } catch (error) {
         console.error(error)
       }

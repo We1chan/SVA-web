@@ -2,33 +2,31 @@
   <div class="realtime-warning">
     <div class="warning-board">
       <div class="board-header">
+        <span class="cell cell-index">序号</span>
         <span class="cell">设备名称</span>
         <span class="cell">报警时间</span>
         <span class="cell">报警类型</span>
       </div>
       <div
+        ref="boardBody"
         class="board-body"
         @mouseenter="pause = true"
         @mouseleave="pause = false"
       >
-        <div v-if="!scrollRows.length" class="empty-tip">暂无报警</div>
-        <div
-          v-else
-          class="scroll-track"
-          :class="{ paused }"
-          :style="{ animationDuration: trackDuration }"
-        >
-          <div
-            v-for="(row, idx) in scrollRows"
-            :key="idx"
+        <div v-if="!rows.length" class="empty-tip">暂无睡岗报警</div>
+        <ul v-else class="warning-list">
+          <li
+            v-for="(row, idx) in rows"
+            :key="row.rowKey || idx"
             class="board-row"
             @click="handleRowClick(row)"
           >
-            <span class="cell">{{ row.device_name }}</span>
+            <span class="cell cell-index">{{ idx + 1 }}</span>
+            <span class="cell" :title="row.device_name">{{ row.device_name }}</span>
             <span class="cell">{{ formatTime(row.alarm_time) }}</span>
-            <span class="cell">{{ row.alarm_type_name }}</span>
-          </div>
-        </div>
+            <span class="cell cell-type">{{ row.alarm_type_name }}</span>
+          </li>
+        </ul>
       </div>
     </div>
     <el-image
@@ -43,8 +41,8 @@
 <script>
 import { getRealAlarm } from '@/api/system/kanban'
 
-const VISIBLE_ROWS = 6
-const SECONDS_PER_ROW = 1.4
+const SCROLL_STEP_PX = 1
+const SCROLL_INTERVAL_MS = 40
 
 export default {
   components: {},
@@ -53,32 +51,14 @@ export default {
       rows: [],
       previewUrl: '',
       pause: false,
-      pushRefreshTimer: null
-    }
-  },
-
-  computed: {
-    // 无缝滚动：内容不足一屏时用循环补齐，再复制一份做无缝回卷
-    scrollRows() {
-      if (!this.rows.length) {
-        return []
-      }
-      const pad = []
-      let guard = 0
-      while (pad.length < VISIBLE_ROWS + 1 && guard < 40) {
-        pad.push(...this.rows)
-        guard += 1
-      }
-      return pad.concat(pad)
-    },
-    trackDuration() {
-      const baseLen = this.rows.length ? Math.min(Math.max(this.rows.length, VISIBLE_ROWS + 1), 48) : 0
-      return `${Math.max(baseLen, 1) * SECONDS_PER_ROW}s`
+      pushRefreshTimer: null,
+      scrollTimer: null
     }
   },
 
   mounted() {
     this.fetchData()
+    this.startAutoScroll()
     window.addEventListener('sva:alarm-push', this.handleAlarmPush)
   },
 
@@ -88,17 +68,30 @@ export default {
   },
 
   methods: {
+    isSleepDutyAlarm(item) {
+      const type = String(item.alarm_type || '').trim().toUpperCase()
+      const name = String(item.alarm_type_name || '').trim()
+      const behavior = String(item.sva_behavior_type || '').trim().toLowerCase()
+      if (name.includes('停留') || type === 'SVA_DWELL' || behavior === 'dwell') {
+        return false
+      }
+      return type === 'SLEEP_DUTY' || name.includes('睡岗') || behavior === 'sleep_duty' || behavior === 'sleep'
+    },
+
     async fetchData() {
       const res = await getRealAlarm()
       if (Number(res.code) !== 200) {
         throw new Error(res.msg)
       }
-      this.rows = (res.data || []).map(item => ({
-        device_name: item.device_name || '-',
-        alarm_time: item.alarm_time || '',
-        alarm_type_name: item.alarm_type_name || '-',
-        picture_absolute_url: item.picture_absolute_url || ''
-      }))
+      this.rows = (res.data || [])
+        .filter(item => this.isSleepDutyAlarm(item))
+        .map((item, index) => ({
+          rowKey: `${item.w_id || item.id || item.alarm_time || 'row'}-${index}`,
+          device_name: item.device_name || '-',
+          alarm_time: item.alarm_time || '',
+          alarm_type_name: item.alarm_type_name || '睡岗告警',
+          picture_absolute_url: item.picture_absolute_url || ''
+        }))
     },
 
     formatTime(value) {
@@ -106,6 +99,31 @@ export default {
         return ''
       }
       return String(value).replace('T', ' ').slice(0, 19)
+    },
+
+    startAutoScroll() {
+      this.stopAutoScroll()
+      this.scrollTimer = setInterval(() => {
+        if (this.pause) {
+          return
+        }
+        const body = this.$refs.boardBody
+        if (!body || body.scrollHeight <= body.clientHeight + 2) {
+          return
+        }
+        if (body.scrollTop + body.clientHeight >= body.scrollHeight - 1) {
+          body.scrollTop = 0
+          return
+        }
+        body.scrollTop += SCROLL_STEP_PX
+      }, SCROLL_INTERVAL_MS)
+    },
+
+    stopAutoScroll() {
+      if (this.scrollTimer) {
+        clearInterval(this.scrollTimer)
+        this.scrollTimer = null
+      }
     },
 
     handleRowClick(row) {
@@ -131,6 +149,7 @@ export default {
     },
 
     clearData() {
+      this.stopAutoScroll()
       if (this.pushRefreshTimer) {
         clearTimeout(this.pushRefreshTimer)
         this.pushRefreshTimer = null
@@ -179,8 +198,17 @@ export default {
 
 .board-body {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
   position: relative;
+}
+
+.board-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.board-body::-webkit-scrollbar-thumb {
+  background: rgba(125, 214, 255, 0.35);
+  border-radius: 6px;
 }
 
 .empty-tip {
@@ -192,26 +220,10 @@ export default {
   font-size: 15px;
 }
 
-.scroll-track {
-  display: flex;
-  flex-direction: column;
-  animation-name: board-scroll;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-.scroll-track.paused {
-  animation-play-state: paused;
-}
-
-@keyframes board-scroll {
-  from {
-    transform: translateY(0);
-  }
-
-  to {
-    transform: translateY(-50%);
-  }
+.warning-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .board-row {
@@ -225,6 +237,7 @@ export default {
   cursor: pointer;
   transition: background 0.25s ease;
   background: rgba(8, 36, 86, 0.82);
+  border-bottom: 1px solid rgba(125, 214, 255, 0.08);
 }
 
 .board-row:nth-child(even) {
@@ -244,5 +257,14 @@ export default {
   white-space: nowrap;
   padding: 0 12px;
   text-align: center;
+}
+
+.cell-index {
+  flex: 0 0 88px;
+  width: 88px;
+}
+
+.cell-type {
+  color: #ffd37a;
 }
 </style>

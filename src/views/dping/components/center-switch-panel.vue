@@ -89,6 +89,7 @@ import WarningHistory from './warning-history.vue'
 import { getDeploymentDetail, updateDeploymentLiveOutput } from '@/api/deployment'
 import { getScreenWallStreams, normalizeScreenWallStream } from '@/api/screenWall'
 import { toBrowserPlayableUrl } from '@/utils/media-url'
+import { createLiveFlvPlayer, destroyLiveFlvPlayer, isFlvUrl } from '@/utils/live-flv-player'
 import { OVERLAY_DELAY_DEFAULT_MS, loadOverlayDelayMs } from '@/utils/systemRuntimeConfig'
 
 export default {
@@ -486,31 +487,31 @@ export default {
 
       this.destroyStreamPlayer(index)
       this.clearOverlayCanvas(index)
-      const playableUrl = this.toBrowserPlayableUrl(url)
-      const isFlv = /\.flv($|[?#])/i.test(playableUrl)
-      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(playableUrl)
-
-      if (isFlv && isHttpOrWs && flvjs.isSupported()) {
-        const player = flvjs.createPlayer({
-          type: 'flv',
-          url: playableUrl,
-          isLive: true
+      if (isFlvUrl(url) && flvjs.isSupported()) {
+        const player = createLiveFlvPlayer(videoElement, url, {
+          onPlaying: () => {
+            if (sessionId !== this.realtimeSession || this.displayMode !== 'realtime') {
+              return
+            }
+            this.updateStreamCard(index, { status: 'playing', player })
+          },
+          onError: () => {
+            if (sessionId !== this.realtimeSession || this.displayMode !== 'realtime') {
+              return
+            }
+            this.updateStreamCard(index, { status: 'failed', player: null })
+            this.destroyStreamPlayer(index)
+          }
         })
-        player.attachMediaElement(videoElement)
-        player.load()
-        this.$nextTick(() => {
-          this.applyContainStyle(videoElement)
-        })
-        player.play().then(() => {
-          this.updateStreamCard(index, { status: 'playing', player })
-        }).catch(() => {
-          this.updateStreamCard(index, { status: 'failed', player: null })
-          this.destroyStreamPlayer(index)
-        })
+        if (!player) {
+          this.updateStreamCard(index, { status: 'failed' })
+          return
+        }
         this.updateStreamCard(index, { player })
         return
       }
 
+      const playableUrl = this.toBrowserPlayableUrl(url)
       videoElement.src = playableUrl
       videoElement.play().then(() => {
         this.updateStreamCard(index, { status: 'playing' })
@@ -526,20 +527,9 @@ export default {
       this.clearDetectFrame(index, false)
 
       if (card && card.player) {
-        try {
-          card.player.unload()
-          card.player.detachMediaElement()
-          card.player.destroy()
-        } catch (error) {
-          // Ignore teardown errors to avoid blocking later stream recovery.
-        }
-      }
-
-      if (videoElement) {
-        videoElement.pause()
-        videoElement.onloadedmetadata = null
-        videoElement.removeAttribute('src')
-        videoElement.load()
+        destroyLiveFlvPlayer(card.player, videoElement)
+      } else if (videoElement) {
+        destroyLiveFlvPlayer(null, videoElement)
       }
 
       this.clearOverlayCanvas(index)

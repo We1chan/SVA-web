@@ -57,6 +57,7 @@
 <script>
 import flvjs from 'flv.js'
 import { toBrowserPlayableUrl } from '@/utils/media-url'
+import { createLiveFlvPlayer, destroyLiveFlvPlayer, isFlvUrl } from '@/utils/live-flv-player'
 import { getDeviceList, previewDeviceMonitor } from '@/api/device'
 import { getAlarmPhoto } from '@/api/system/kanban'
 
@@ -136,7 +137,16 @@ export default {
       try {
         const response = await getAlarmPhoto()
         const list = (response && response.data && Array.isArray(response.data)) ? response.data : []
-        const normalized = list.slice(0, 4).map(this.normalizeAlarm)
+        const sleepOnly = list.filter(item => {
+          const type = String(item.alarm_type || '').trim().toUpperCase()
+          const name = String(item.alarm_type_name || item.alarmTypeName || '').trim()
+          const behavior = String(item.sva_behavior_type || '').trim().toLowerCase()
+          if (name.includes('停留') || type === 'SVA_DWELL' || behavior === 'dwell') {
+            return false
+          }
+          return type === 'SLEEP_DUTY' || name.includes('睡岗') || behavior === 'sleep_duty' || behavior === 'sleep'
+        })
+        const normalized = sleepOnly.slice(0, 4).map(this.normalizeAlarm)
         while (normalized.length < 4) {
           normalized.push({ picture: '', deviceName: '--', alarmType: '--' })
         }
@@ -286,35 +296,39 @@ export default {
       if (sessionId !== this.realtimeSession || this.activeTab !== 'realtime') {
         return
       }
-      const video = this.$refs[`liveVideo${index}`]
+      const videoRef = this.$refs[`liveVideo${index}`]
+      const video = Array.isArray(videoRef) ? videoRef[0] : videoRef
       if (!video) {
         this.updateStreamCard(index, { status: 'failed', previewUrl: '' })
         return
       }
 
       this.destroyStreamPlayer(index)
-      const playableUrl = toBrowserPlayableUrl(url)
-      const isFlv = /\.flv($|[?#])/i.test(playableUrl)
-      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(playableUrl)
-
-      if (isFlv && isHttpOrWs && flvjs.isSupported()) {
-        const player = flvjs.createPlayer({
-          type: 'flv',
-          url: playableUrl,
-          isLive: true
+      if (isFlvUrl(url) && flvjs.isSupported()) {
+        const player = createLiveFlvPlayer(video, url, {
+          onPlaying: (playableUrl) => {
+            if (sessionId !== this.realtimeSession || this.activeTab !== 'realtime') {
+              return
+            }
+            this.updateStreamCard(index, { status: 'playing', previewUrl: playableUrl, player })
+          },
+          onError: () => {
+            if (sessionId !== this.realtimeSession || this.activeTab !== 'realtime') {
+              return
+            }
+            this.updateStreamCard(index, { status: 'failed', previewUrl: '', player: null })
+            this.destroyStreamPlayer(index)
+          }
         })
-        player.attachMediaElement(video)
-        player.load()
-        player.play().then(() => {
-          this.updateStreamCard(index, { status: 'playing', previewUrl: playableUrl, player })
-        }).catch(() => {
-          this.updateStreamCard(index, { status: 'failed', previewUrl: playableUrl, player: null })
-          this.destroyStreamPlayer(index)
-        })
-        this.updateStreamCard(index, { player, previewUrl: playableUrl })
+        if (!player) {
+          this.updateStreamCard(index, { status: 'failed', previewUrl: '' })
+          return
+        }
+        this.updateStreamCard(index, { player })
         return
       }
 
+      const playableUrl = toBrowserPlayableUrl(url)
       video.src = playableUrl
       video.play().then(() => {
         this.updateStreamCard(index, { status: 'playing', previewUrl: playableUrl })
@@ -325,20 +339,12 @@ export default {
 
     destroyStreamPlayer(index) {
       const card = this.streamCards[index]
-      const video = this.$refs[`liveVideo${index}`]
+      const videoRef = this.$refs[`liveVideo${index}`]
+      const video = Array.isArray(videoRef) ? videoRef[0] : videoRef
       if (card && card.player) {
-        try {
-          card.player.unload()
-          card.player.detachMediaElement()
-          card.player.destroy()
-        } catch (error) {
-          // Ignore teardown errors to avoid blocking later stream recovery.
-        }
-      }
-      if (video) {
-        video.pause()
-        video.removeAttribute('src')
-        video.load()
+        destroyLiveFlvPlayer(card.player, video)
+      } else if (video) {
+        destroyLiveFlvPlayer(null, video)
       }
       if (card) {
         this.updateStreamCard(index, { player: null })

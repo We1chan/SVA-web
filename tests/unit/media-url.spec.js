@@ -7,22 +7,27 @@ describe('toBrowserPlayableUrl', () => {
     host: 'localhost'
   }
 
-  it('rewrites local ZLM websocket FLV through the same-origin media proxy', () => {
+  it('rewrites local ZLM websocket FLV to same-origin HTTP-FLV', () => {
     expect(toBrowserPlayableUrl('ws://127.0.0.1:9992/live/cam228703.live.flv', httpLocation))
-      .toBe('ws://localhost/media/live/cam228703.live.flv')
+      .toBe('http://localhost/live/cam228703.live.flv')
   })
 
   it('rewrites IPv6 loopback and preserves query parameters', () => {
     expect(toBrowserPlayableUrl('ws://[::1]:9992/live/cam228704.live.flv?token=1', httpLocation))
-      .toBe('ws://localhost/media/live/cam228704.live.flv?token=1')
+      .toBe('http://localhost/live/cam228704.live.flv?token=1')
+  })
+
+  it('expands relative HTTP-FLV paths so flv.js gets an absolute URL', () => {
+    expect(toBrowserPlayableUrl('/live/cam2.live.flv', httpLocation))
+      .toBe('http://localhost/live/cam2.live.flv')
   })
 
   it('uses secure protocols on an HTTPS page', () => {
     const httpsLocation = { href: 'https://sva.local/', protocol: 'https:', host: 'sva.local' }
     expect(toBrowserPlayableUrl('http://127.0.0.1:9992/live/camera.live.flv', httpsLocation))
-      .toBe('https://sva.local/media/live/camera.live.flv')
+      .toBe('https://sva.local/live/camera.live.flv')
     expect(toBrowserPlayableUrl('ws://127.0.0.1:9992/live/camera.live.flv', httpsLocation))
-      .toBe('wss://sva.local/media/live/camera.live.flv')
+      .toBe('https://sva.local/live/camera.live.flv')
   })
 
   it('leaves non-ZLM and non-loopback URLs unchanged', () => {

@@ -1081,6 +1081,7 @@
 <script>
 import flvjs from 'flv.js'
 import { toBrowserPlayableUrl } from '@/utils/media-url'
+import { createLiveFlvPlayer, destroyLiveFlvPlayer, isFlvUrl } from '@/utils/live-flv-player'
 import { getDeviceList, previewDeviceMonitor } from '@/api/device'
 import { getAlgorithmList, getAlgorithmTargets } from '@/api/algorithm'
 import { createDeployment, getDeploymentDetail, updateDeployment, updateDeploymentLiveOutput } from '@/api/deployment'
@@ -1240,7 +1241,6 @@ export default {
         { value: 'cross_line', label: '跨线' },
         { value: 'enter_region', label: '进区' },
         { value: 'exit_region', label: '出区' },
-        { value: 'dwell', label: '停留' },
         { value: 'low_speed', label: '低速' },
         { value: 'loitering', label: '徘徊' },
         { value: 'sleep', label: '睡觉' },
@@ -2409,7 +2409,7 @@ export default {
       const nextIndex = this.behaviorRuleSeed
       this.behaviorRuleSeed += 1
       const hasLine = Array.isArray(geometryConfig.lines) && geometryConfig.lines.length > 0
-      const behaviorType = this.normalizeBehaviorType(overrides.behaviorType || (hasLine ? 'cross_line' : 'dwell')) || 'dwell'
+      const behaviorType = this.normalizeBehaviorType(overrides.behaviorType || (hasLine ? 'cross_line' : 'sleep_duty')) || 'sleep_duty'
       const defaultState = this.getBehaviorRuleDefaultState(behaviorType)
       const rule = {
         id: overrides.id || `behavior_rule_${nextIndex}`,
@@ -4498,40 +4498,21 @@ export default {
       if (!video || !url) {
         return
       }
-      const playableUrl = toBrowserPlayableUrl(url)
 
-      const isFlv = /\.flv($|[?#])/i.test(playableUrl)
-      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(playableUrl)
-
-      if (isFlv && isHttpOrWs && flvjs.isSupported()) {
-        this.flvPlayer = flvjs.createPlayer({
-          type: 'flv',
-          url: playableUrl,
-          isLive: true
-        })
-        this.flvPlayer.attachMediaElement(video)
-        this.flvPlayer.load()
-        this.flvPlayer.play().catch(() => {})
+      if (isFlvUrl(url) && flvjs.isSupported()) {
+        this.flvPlayer = createLiveFlvPlayer(video, url)
         return
       }
 
+      const playableUrl = toBrowserPlayableUrl(url)
       video.src = playableUrl
       video.play().catch(() => {})
     },
 
     destroyPlayer() {
       const video = this.$refs.previewVideo
-      if (this.flvPlayer) {
-        this.flvPlayer.unload()
-        this.flvPlayer.detachMediaElement()
-        this.flvPlayer.destroy()
-        this.flvPlayer = null
-      }
-      if (video) {
-        video.pause()
-        video.removeAttribute('src')
-        video.load()
-      }
+      destroyLiveFlvPlayer(this.flvPlayer, video)
+      this.flvPlayer = null
       this.videoLoaded = false
     },
 
