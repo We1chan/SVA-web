@@ -439,7 +439,9 @@ export default {
   mounted() {
     this.fetchQueryOptionData()
     this.$nextTick(() => {
-      this.deviceContainer.parentNode.style.backgroundColor = 'white'
+      if (this.deviceContainer && this.deviceContainer.parentNode) {
+        this.deviceContainer.parentNode.style.backgroundColor = 'white'
+      }
     })
     this.solveRouterQuery()
   },
@@ -460,33 +462,33 @@ export default {
         switch (withQue) {
           case '1':
             this.dateRange = [
-              formatDateLocal(new Date(now.getFullYear(), 0, 2)),
+              formatDateLocal(new Date(now.getFullYear(), 0, 1)),
               formatDateLocal(now) // 今天
             ]
             break
           case '2': // 查看【本月初-今天】的报警数据
-            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 2)), formatDateLocal(now)]
+            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 1)), formatDateLocal(now)]
             this.querySpecificParams.is_handle = this.$route.query.is_handle
             break
           case '3':
-            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 2)), formatDateLocal(now)]
+            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 1)), formatDateLocal(now)]
             this.querySpecificParams.is_handle = this.$route.query.is_handle
             break
           case '4':
-            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 2)), formatDateLocal(now)]
+            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 1)), formatDateLocal(now)]
             this.querySpecificParams.alarm_level_name = '警告'
             break
           case '5': // 查看本年严重数据
-            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 2)), formatDateLocal(now)]
+            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 1)), formatDateLocal(now)]
             this.querySpecificParams.alarm_level_name = '严重'
             break
           case '6': // 查看本月严重数据
-            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 2)), formatDateLocal(now)]
+            this.dateRange = [formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 1)), formatDateLocal(now)]
             this.querySpecificParams.alarm_level_name = '严重'
             break
           case '7': // 根据 wid 处理具体事件
             this.dateRange = []
-            // this.dateRange = [new Date(new Date().getFullYear(), 0, 2).toISOString().slice(0, 10), new Date().toISOString().slice(0, 10)];
+            // this.dateRange = [new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10), new Date().toISOString().slice(0, 10)];
             this.querySpecificParams.w_id = this.$route.query.wid
             break
           case '8': // 按周 月 季度 年 查询报警数据
@@ -497,18 +499,18 @@ export default {
               endDate = formatDateLocal(endDate)
               this.dateRange = [startDate, endDate]
             } else if (time === '月') {
-              this.dateRange = [formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 2)), formatDateLocal(new Date(now.getFullYear(), now.getMonth() + 1, 1))]
+              this.dateRange = [formatDateLocal(new Date(now.getFullYear(), now.getMonth(), 1)), formatDateLocal(new Date(now.getFullYear(), now.getMonth() + 1, 0))]
             } else if (time === '季度') {
               // 获取当前日期对象及相应季度信息
               const currentDate = now
               const currentMonth = currentDate.getMonth() + 1
               const currentQuarter = Math.ceil(currentMonth / 3) // 计算当前季度（1, 2, 3 或 4）
-              if (currentQuarter === 1) this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 2)), formatDateLocal(new Date(now.getFullYear(), 3, 1))]
-              else if (currentQuarter === 2) this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 3, 2)), formatDateLocal(new Date(now.getFullYear(), 6, 1))]
-              else if (currentQuarter === 3) this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 6, 2)), formatDateLocal(new Date(now.getFullYear(), 9, 1))]
-              else this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 9, 2)), formatDateLocal(new Date(now.getFullYear() + 1, 0, 1))]
+              if (currentQuarter === 1) this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 1)), formatDateLocal(new Date(now.getFullYear(), 3, 0))]
+              else if (currentQuarter === 2) this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 3, 1)), formatDateLocal(new Date(now.getFullYear(), 6, 0))]
+              else if (currentQuarter === 3) this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 6, 1)), formatDateLocal(new Date(now.getFullYear(), 9, 0))]
+              else this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 9, 1)), formatDateLocal(new Date(now.getFullYear() + 1, 0, 0))]
             } else {
-              this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 2)), formatDateLocal(new Date(now.getFullYear() + 1, 0, 1))]
+              this.dateRange = [formatDateLocal(new Date(now.getFullYear(), 0, 1)), formatDateLocal(new Date(now.getFullYear() + 1, 0, 0))]
               this.querySpecificParams.team = this.$route.query.team
             }
             break
