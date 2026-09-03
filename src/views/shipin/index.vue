@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { getTest } from '@/api/system/kanban'
+import { getTestData } from '@/api/test'
 export default {
   data() {
     return {
@@ -47,7 +47,7 @@ export default {
   methods: {
     async fetchData() {
       try {
-        const res = await getTest()
+        const res = await getTestData()
         if (Number(res.code) !== 200) throw new Error(res.msg)
         this.deviceImages = res.data
       } catch (error) {

@@ -102,6 +102,12 @@ export const constantRoutes = [
         component: () => import('@/views/deployment/eventOrchestration'),
         name: 'DeploymentEventOrchestration',
         meta: { title: '事件编排', activeMenu: '/deployment' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/deployment/add'),
+        name: 'DeploymentAdd',
+        meta: { title: '布控新增', activeMenu: '/deployment' }
       }
     ]
   }
