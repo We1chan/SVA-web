@@ -458,13 +458,20 @@ export default {
 
       this.destroyStreamPlayer(index)
       this.clearOverlayCanvas(index)
-      const isFlv = /\.flv($|[?#])/i.test(url)
-      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(url)
+      const resolvedUrl = (() => {
+        try {
+          return new URL(url, window.location.href).href
+        } catch (error) {
+          return url
+        }
+      })()
+      const isFlv = /\.flv($|[?#])/i.test(resolvedUrl)
+      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(resolvedUrl)
 
       if (isFlv && isHttpOrWs && flvjs.isSupported()) {
         const player = flvjs.createPlayer({
           type: 'flv',
-          url,
+          url: resolvedUrl,
           isLive: true
         })
         player.attachMediaElement(videoElement)
@@ -482,7 +489,7 @@ export default {
         return
       }
 
-      videoElement.src = url
+      videoElement.src = resolvedUrl
       videoElement.play().then(() => {
         this.updateStreamCard(index, { status: 'playing' })
       }).catch(() => {
