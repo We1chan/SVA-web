@@ -7,13 +7,13 @@ const state = {
     hide: false
   },
   device: 'desktop',
-  size: Cookies.get('size') || 'medium',
+  size: Cookies.get('size') || 'medium'
 }
 
 const mutations = {
   TOGGLE_SIDEBAR: state => {
     if (state.sidebar.hide) {
-      return false;
+      return false
     }
     state.sidebar.opened = !state.sidebar.opened
     state.sidebar.withoutAnimation = false
@@ -55,7 +55,7 @@ const actions = {
   },
   toggleSideBarHide({ commit }, status) {
     commit('SET_SIDEBAR_HIDE', status)
-  },
+  }
 }
 
 export default {

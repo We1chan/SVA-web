@@ -70,15 +70,15 @@ export default {
       this.show = false
     },
     change(val) {
-      const path = val.path;
-      const query = val.query;
-      if(this.ishttp(val.path)) {
+      const path = val.path
+      const query = val.query
+      if (this.ishttp(val.path)) {
         // http(s):// 路径新窗口打开
-        const pindex = path.indexOf("http");
-        window.open(path.substr(pindex, path.length), "_blank");
+        const pindex = path.indexOf('http')
+        window.open(path.substr(pindex, path.length), '_blank')
       } else {
         if (query) {
-          this.$router.push({ path: path, query: JSON.parse(query) });
+          this.$router.push({ path: path, query: JSON.parse(query) })
         } else {
           this.$router.push(path)
         }

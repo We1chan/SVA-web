@@ -40,21 +40,21 @@
     <!--    </el-row>-->
     <el-row>
       <el-col :span="8">
-        <el-image style="margin: 20px 0 0 23px" :src="require('@/assets/images/tip.png')" fit="contain"></el-image>
+        <el-image style="margin: 20px 0 0 23px" :src="require('@/assets/images/tip.png')" fit="contain" />
         <router-link :to="{ path: '/warning/warning', query: { withQue: 3 } }">
           <div style="font-size: 18px; color: #30FBE5;text-align: center">{{ this.monthWarning.lastYear }}</div>
         </router-link>
         <div style="text-align: center;font-size: 14px;margin-top: 10px">年度报警</div>
       </el-col>
       <el-col :span="8">
-        <el-image style="margin: 20px 0 0 23px" :src="require('@/assets/images/warning.png')" fit="contain"></el-image>
+        <el-image style="margin: 20px 0 0 23px" :src="require('@/assets/images/warning.png')" fit="contain" />
         <router-link :to="{ path: '/warning/warning', query: { withQue: 2 } }">
           <div style="font-size: 18px; color: #30FBE5;text-align: center">{{ this.monthWarning.instant }}</div>
         </router-link>
         <div style="text-align: center;font-size: 14px;margin-top: 10px">月度报警</div>
       </el-col>
       <el-col :span="8">
-        <el-image style="margin: 20px 0 0 23px" :src="require('@/assets/images/serious.png')" fit="contain"></el-image>
+        <el-image style="margin: 20px 0 0 23px" :src="require('@/assets/images/serious.png')" fit="contain" />
         <router-link :to="{ path: '/warning/warning', query: { withQue: 3, is_handle: 1 } }">
           <div style="font-size: 18px; color: #30FBE5;text-align: center">{{ this.monthWarning.num }}</div>
         </router-link>
@@ -147,13 +147,11 @@
     <!--      </el-col>-->
     <!--    </el-row>-->
 
-
   </div>
 </template>
 
 <script>
-import {getMonthWaring, getRanking} from '@/api/system/kanban';
-
+import { getMonthWaring, getRanking } from '@/api/system/kanban'
 
 export default {
   data() {
@@ -161,13 +159,35 @@ export default {
       monthWarning: {
         lastYear: 0,
         instant: 0,
-        num: 0,
+        num: 0
       },
       reminder: 0,
       warning: 0,
       serious: 0,
       pushRefreshTimer: null
-    };
+    }
+  },
+
+  mounted() {
+    this.fetchData()
+    window.addEventListener('sva:alarm-push', this.handleAlarmPush)
+  },
+
+  beforeCreate() {
+  }, // 生命周期 - 创建之前
+  beforeMount() {
+  }, // 生命周期 - 挂载之前
+  beforeUpdate() {
+  }, // 生命周期 - 更新之前
+  updated() {
+  }, // 生命周期 - 更新之后
+  beforeDestroy() {
+    window.removeEventListener('sva:alarm-push', this.handleAlarmPush)
+    this.clearData()
+  }, // 生命周期 - 销毁之前
+  destroyed() {
+  }, // 生命周期 - 销毁完成
+  activated() {
   },
 
   methods: {
@@ -180,38 +200,38 @@ export default {
         ] = await Promise.all([
           getMonthWaring(),
           getRanking()
-        ]);
+        ])
 
-        if (response.code !== 200) throw new Error(response.msg);
-        if (monthWarningResponse.code !== 200) throw new Error(monthWarningResponse.msg);
+        if (response.code !== 200) throw new Error(response.msg)
+        if (monthWarningResponse.code !== 200) throw new Error(monthWarningResponse.msg)
         response.data.level.forEach(item => {
           switch (item.alarm_level_name) {
-            case "提示":
-              this.reminder = item.num;
-              break;
-            case "警告":
-              this.warning = item.num;
-              break;
-            case "紧急":
-              this.serious = item.num;
-              break;
+            case '提示':
+              this.reminder = item.num
+              break
+            case '警告':
+              this.warning = item.num
+              break
+            case '紧急':
+              this.serious = item.num
+              break
           }
-        });
+        })
 
-        this.monthWarning = monthWarningResponse.data;
+        this.monthWarning = monthWarningResponse.data
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     },
 
     handleAlarmPush() {
       if (this.pushRefreshTimer) {
-        return;
+        return
       }
-      this.pushRefreshTimer = setTimeout(async () => {
-        this.pushRefreshTimer = null;
-        await this.fetchData();
-      }, 2008);
+      this.pushRefreshTimer = setTimeout(async() => {
+        this.pushRefreshTimer = null
+        await this.fetchData()
+      }, 2008)
     },
 
     clearData() {
@@ -219,31 +239,9 @@ export default {
         clearTimeout(this.pushRefreshTimer)
         this.pushRefreshTimer = null
       }
-    },
+    }
 
-  },
-
-  mounted() {
-    this.fetchData()
-    window.addEventListener('sva:alarm-push', this.handleAlarmPush)
-  },
-
-  beforeCreate() {
-  }, //生命周期 - 创建之前
-  beforeMount() {
-  }, //生命周期 - 挂载之前
-  beforeUpdate() {
-  }, //生命周期 - 更新之前
-  updated() {
-  }, //生命周期 - 更新之后
-  beforeDestroy() {
-    window.removeEventListener('sva:alarm-push', this.handleAlarmPush)
-    this.clearData()
-  }, //生命周期 - 销毁之前
-  destroyed() {
-  }, //生命周期 - 销毁完成
-  activated() {
-  }, //如果页面有keep-alive缓存功能，这个函数会触发
+  } // 如果页面有keep-alive缓存功能，这个函数会触发
 }
 </script>
 
@@ -293,7 +291,6 @@ export default {
     line-height: 10px;
   }
 }
-
 
 .title {
   display: flex;

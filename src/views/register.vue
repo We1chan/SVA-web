@@ -29,7 +29,7 @@
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
-      <el-form-item prop="code" v-if="captchaEnabled">
+      <el-form-item v-if="captchaEnabled" prop="code">
         <el-input
           v-model="registerForm.code"
           auto-complete="off"
@@ -40,7 +40,7 @@
           <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
         </el-input>
         <div class="register-code">
-          <img :src="codeUrl" @click="getCode" class="register-code-img"/>
+          <img :src="codeUrl" class="register-code-img" @click="getCode">
         </div>
       </el-form-item>
       <el-form-item style="width:100%;">
@@ -67,82 +67,82 @@
 </template>
 
 <script>
-import { getCodeImg, register } from "@/api/login";
+import { getCodeImg, register } from '@/api/login'
 
 export default {
-  name: "Register",
+  name: 'Register',
   data() {
     const equalToPassword = (rule, value, callback) => {
       if (this.registerForm.password !== value) {
-        callback(new Error("两次输入的密码不一致"));
+        callback(new Error('两次输入的密码不一致'))
       } else {
-        callback();
+        callback()
       }
-    };
+    }
     return {
-      codeUrl: "",
+      codeUrl: '',
       registerForm: {
-        username: "",
-        password: "",
-        confirmPassword: "",
-        code: "",
-        uuid: ""
+        username: '',
+        password: '',
+        confirmPassword: '',
+        code: '',
+        uuid: ''
       },
       registerRules: {
         username: [
-          { required: true, trigger: "blur", message: "请输入您的账号" },
+          { required: true, trigger: 'blur', message: '请输入您的账号' },
           { min: 2, max: 20, message: '用户账号长度必须介于 2 和 20 之间', trigger: 'blur' }
         ],
         password: [
-          { required: true, trigger: "blur", message: "请输入您的密码" },
+          { required: true, trigger: 'blur', message: '请输入您的密码' },
           { min: 5, max: 20, message: '用户密码长度必须介于 5 和 20 之间', trigger: 'blur' }
         ],
         confirmPassword: [
-          { required: true, trigger: "blur", message: "请再次输入您的密码" },
-          { required: true, validator: equalToPassword, trigger: "blur" }
+          { required: true, trigger: 'blur', message: '请再次输入您的密码' },
+          { required: true, validator: equalToPassword, trigger: 'blur' }
         ],
-        code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+        code: [{ required: true, trigger: 'change', message: '请输入验证码' }]
       },
       loading: false,
       captchaEnabled: true
-    };
+    }
   },
   created() {
-    this.getCode();
+    this.getCode()
   },
   methods: {
     getCode() {
       getCodeImg().then(res => {
-        this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
+        this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled
         if (this.captchaEnabled) {
-          this.codeUrl = "data:image/gif;base64," + res.img;
-          this.registerForm.uuid = res.uuid;
+          this.codeUrl = 'data:image/gif;base64,' + res.img
+          this.registerForm.uuid = res.uuid
         }
-      });
+      })
     },
     handleRegister() {
       this.$refs.registerForm.validate(valid => {
         if (valid) {
-          this.loading = true;
+          this.loading = true
           register(this.registerForm).then(res => {
-            const username = this.registerForm.username;
-            this.$alert("<font color='red'>恭喜你，您的账号 " + username + " 注册成功！</font>", '系统提示', {
+            const username = this.registerForm.username
+            this.$alert("<font color='red'>恭喜你，您的账号 " + username + ' 注册成功！</font>', '系统提示', {
               dangerouslyUseHTMLString: true,
               type: 'success'
             }).then(() => {
-              this.$router.push("/login");
-            }).catch(() => {});
+              this.$router.push('/login')
+            }).catch(() => {})
           }).catch(() => {
-            this.loading = false;
+            this.loading = false
             if (this.captchaEnabled) {
-              this.getCode();
+              this.getCode()
             }
           })
         }
-      });
+      })
     }
   }
-};
+}
 </script>
 
 <style rel="stylesheet/scss" lang="scss">

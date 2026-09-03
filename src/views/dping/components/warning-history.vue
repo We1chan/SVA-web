@@ -1,10 +1,14 @@
 <template>
   <div class="avb">
     <el-row :gutter="20">
-      <el-col :span="8" v-for="(item, index) in deviceImages.slice(0, 3)" :key="index" style="position: relative">
+      <el-col v-for="(item, index) in deviceImages.slice(0, 3)" :key="index" :span="8" style="position: relative">
         <div class="image-container">
-          <el-image class="img" :src="item.picture_absolute_url" fit="contain"
-                    :preview-src-list="[item.picture_absolute_url]"></el-image>
+          <el-image
+            class="img"
+            :src="item.picture_absolute_url"
+            fit="contain"
+            :preview-src-list="[item.picture_absolute_url]"
+          />
           <div class="alarm-type">{{ item.alarm_type_name }}</div>
         </div>
         <div class="caption">{{ item.device_name }}</div>
@@ -12,10 +16,14 @@
     </el-row>
 
     <el-row :gutter="20">
-      <el-col :span="8" v-for="(item, index) in deviceImages.slice(3, 6)" :key="index + 3" style="position: relative">
+      <el-col v-for="(item, index) in deviceImages.slice(3, 6)" :key="index + 3" :span="8" style="position: relative">
         <div class="image-container">
-          <el-image class="img" :src="item.picture_absolute_url" fit="contain"
-                    :preview-src-list="[item.picture_absolute_url]"></el-image>
+          <el-image
+            class="img"
+            :src="item.picture_absolute_url"
+            fit="contain"
+            :preview-src-list="[item.picture_absolute_url]"
+          />
           <div class="alarm-type">{{ item.alarm_type_name }}</div>
         </div>
         <div class="caption">{{ item.device_name }}</div>
@@ -25,14 +33,14 @@
 </template>
 
 <script>
-import {getAlarmPhoto} from '@/api/system/kanban';
+import { getAlarmPhoto } from '@/api/system/kanban'
 
 export default {
   data() {
     return {
       deviceImages: [],
       timer: null
-    };
+    }
   },
 
   mounted() {
@@ -47,12 +55,12 @@ export default {
   methods: {
     async fetchData() {
       try {
-        const res = await getAlarmPhoto();
+        const res = await getAlarmPhoto()
         console.log(res, 'res')
-        if (res.code != 200) throw new Error(res.msg);
-        this.deviceImages = res.data;
+        if (Number(res.code) !== 200) throw new Error(res.msg)
+        this.deviceImages = res.data
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     },
 
@@ -64,7 +72,7 @@ export default {
       // let looper = (a) => {
       //   this.getData()
       // };
-      this.timer = setInterval(this.fetchData, 20000);
+      this.timer = setInterval(this.fetchData, 20000)
     },
 
     clearData() {
@@ -73,10 +81,9 @@ export default {
         this.timer = null
       }
     }
-  },
-};
+  }
+}
 </script>
-
 
 <style lang='scss' scoped>
 .avb {

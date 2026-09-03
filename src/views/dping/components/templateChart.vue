@@ -1,21 +1,21 @@
 <template>
-  <div ref="templateChart" id="templateChart" class="templateChart"></div>
+  <div id="templateChart" ref="templateChart" class="templateChart" />
 </template>
 
 <script>
 import * as echarts from 'echarts'
 
 export default {
-  data() {
-    return {
-      templateChart: null,
-    }
-  },
   props: {
     option: {
       type: Object,
-      require: true,
-    },
+      require: true
+    }
+  },
+  data() {
+    return {
+      templateChart: null
+    }
   },
   methods: {
     initChart() {
@@ -25,8 +25,8 @@ export default {
     },
     setOption() {
       this.templateChart.setOption(this.option)
-    },
-  },
+    }
+  }
 }
 </script>
 

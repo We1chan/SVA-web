@@ -5,5 +5,5 @@ export function getTestData(query) {
     url: `/waring/handle/getTestData`,
     method: 'get',
     params: query
-  });
+  })
 }

@@ -6,9 +6,9 @@
     </el-input>
     <div class="icon-list">
       <div class="list-container">
-        <div v-for="(item, index) in iconList" class="icon-item-wrapper" :key="index" @click="selectedIcon(item)">
+        <div v-for="(item, index) in iconList" :key="index" class="icon-item-wrapper" @click="selectedIcon(item)">
           <div :class="['icon-item', { active: activeIcon === item }]">
-            <svg-icon :icon-class="item" class-name="icon" style="height: 25px;width: 16px;"/>
+            <svg-icon :icon-class="item" class-name="icon" style="height: 25px;width: 16px;" />
             <span>{{ item }}</span>
           </div>
         </div>

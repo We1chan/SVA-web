@@ -74,7 +74,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/home/index'),
         name: 'Index',
-        meta: {title: '首页', icon: 'dashboard', affix: true}
+        meta: { title: '首页', icon: 'dashboard', affix: true }
       }
     ]
   },
@@ -88,7 +88,7 @@ export const constantRoutes = [
         path: 'profile',
         component: () => import('@/views/system/user/profile/index'),
         name: 'Profile',
-        meta: {title: '个人中心', icon: 'user'}
+        meta: { title: '个人中心', icon: 'user' }
       }
     ]
   },
@@ -119,7 +119,7 @@ export const dynamicRoutes = [
         path: 'role/:userId(\\d+)',
         component: () => import('@/views/system/user/authRole'),
         name: 'AuthRole',
-        meta: {title: '分配角色', activeMenu: '/system/user'}
+        meta: { title: '分配角色', activeMenu: '/system/user' }
       }
     ]
   },
@@ -133,7 +133,7 @@ export const dynamicRoutes = [
         path: 'user/:roleId(\\d+)',
         component: () => import('@/views/system/role/authUser'),
         name: 'AuthUser',
-        meta: {title: '分配用户', activeMenu: '/system/role'}
+        meta: { title: '分配用户', activeMenu: '/system/role' }
       }
     ]
   },
@@ -147,7 +147,7 @@ export const dynamicRoutes = [
         path: 'index/:dictId(\\d+)',
         component: () => import('@/views/system/dict/data'),
         name: 'Data',
-        meta: {title: '字典数据', activeMenu: '/system/dict'}
+        meta: { title: '字典数据', activeMenu: '/system/dict' }
       }
     ]
   },
@@ -161,7 +161,7 @@ export const dynamicRoutes = [
         path: 'index/:jobId(\\d+)',
         component: () => import('@/views/monitor/job/log'),
         name: 'JobLog',
-        meta: {title: '调度日志', activeMenu: '/monitor/job'}
+        meta: { title: '调度日志', activeMenu: '/monitor/job' }
       }
     ]
   },
@@ -175,15 +175,15 @@ export const dynamicRoutes = [
         path: 'index/:tableId(\\d+)',
         component: () => import('@/views/tool/gen/editTable'),
         name: 'GenEdit',
-        meta: {title: '修改生成配置', activeMenu: '/tool/gen'}
+        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
   }
 ]
 
 // 防止连续点击多次路由报错
-let routerPush = Router.prototype.push;
-let routerReplace = Router.prototype.replace;
+const routerPush = Router.prototype.push
+const routerReplace = Router.prototype.replace
 // push
 Router.prototype.push = function push(location) {
   return routerPush.call(this, location).catch(err => err)
@@ -195,6 +195,6 @@ Router.prototype.replace = function push(location) {
 
 export default new Router({
   mode: 'hash', // 去掉url中的#
-  scrollBehavior: () => ({y: 0}),
+  scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })

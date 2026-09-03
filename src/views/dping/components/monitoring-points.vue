@@ -1,22 +1,21 @@
 <template>
   <div class="user_Overview">
-    <div @click="toPage('/device/device')" class="user-title">
-<!--      <div class="user_Overview_nums allnum ">-->
-<!--        <dv-digital-flop :config="config" style="width:100%; height:100%;" />-->
-<!--      </div>-->
-      <BarChart id="firstBar" ref="firstBar" :option="firstOption"></BarChart>
+    <div class="user-title" @click="toPage('/device/device')">
+      <!--      <div class="user_Overview_nums allnum ">-->
+      <!--        <dv-digital-flop :config="config" style="width:100%; height:100%;" />-->
+      <!--      </div>-->
+      <BarChart id="firstBar" ref="firstBar" :option="firstOption" />
     </div>
 
-    <div @click="toPage('/device/device', { isOnline: 1 })" class="user-title">
-      <BarChart id="secondBar" ref="secondBar" :option="secondOption"></BarChart>
+    <div class="user-title" @click="toPage('/device/device', { isOnline: 1 })">
+      <BarChart id="secondBar" ref="secondBar" :option="secondOption" />
     </div>
 
-    <div @click="toPage('/device/device', { isOnline: 2 })" class="user-title">
-      <BarChart id="thirdBar" ref="thirdBar" :option="thirdOption"></BarChart>
+    <div class="user-title" @click="toPage('/device/device', { isOnline: 2 })">
+      <BarChart id="thirdBar" ref="thirdBar" :option="thirdOption" />
     </div>
 
     <!-- <li class="user_Overview-item" style="color: #07f7a8; margin-right: 25px; margin-top: -10px">
-
 
     </li>
     <li class="user_Overview-item" style="color: #e3b337; margin-right: 25px; margin-top: -10px">
@@ -26,24 +25,19 @@
 </template>
 
 <script>
-import { getDeviceNum } from '@/api/system/kanban';
-import { markRaw } from 'vue'
+import { getDeviceNum } from '@/api/system/kanban'
 import * as echarts from 'echarts'
 import BarChart from '@/views/dping/components/templateChart.vue'
-let style = {
+const style = {
   fontSize: 24
 }
 
-const demoData = {
-  name: "城镇化率",
-  value: 121,
-}
-const option =  {
+const option = {
   series: [
     {
-      type: "gauge",
-      radius: "90%", // 1行3个
-      center: ["50%", "55%"],
+      type: 'gauge',
+      radius: '90%', // 1行3个
+      center: ['50%', '55%'],
       splitNumber: 10,
       // min: 0,
       startAngle: 180,
@@ -52,13 +46,13 @@ const option =  {
       axisLine: {
         lineStyle: {
           width: 1,
-          color: [[1, "rgba(255,255,255,0)"]],
+          color: [[1, 'rgba(255,255,255,0)']]
         }
       },
-      //刻度标签。
+      // 刻度标签。
       axisTick: {
         show: true,
-        splitNumber: 6, //刻度的段落数
+        splitNumber: 6, // 刻度的段落数
         itemStyle: {
           color: {
             type: 'linear',
@@ -79,41 +73,41 @@ const option =  {
             global: false // 缺省为 false
           }
         },
-        length: 2, //刻度的长度
+        length: 2 // 刻度的长度
       },
       splitLine: {
-        show: false,
+        show: false
       },
       // //刻度线文字
       axisLabel: {
-        show: false,
+        show: false
       },
 
       data: [],
       pointer: {
         show: true,
-        length: "60%",
-        radius: "50%",
+        length: '60%',
+        radius: '50%',
         itemStyle: {
           color: '#ffffff'
         },
-        width: 3, //指针粗细
-        offsetCenter: [0, 0],
+        width: 3, // 指针粗细
+        offsetCenter: [0, 0]
       },
       title: {
         // 仪表盘标题。
-        show: false,
-      },
+        show: false
+      }
     },
     {
-      type: "pie",
-      radius: ["95%", "105%"],
-      center: ["50%", "55%"],
+      type: 'pie',
+      radius: ['95%', '105%'],
+      center: ['50%', '55%'],
       startAngle: 180,
       endAngle: 0,
       color: [
         {
-          type: "linear",
+          type: 'linear',
           x: 1,
           y: 0,
           x2: 0,
@@ -121,102 +115,107 @@ const option =  {
           colorStops: [
             {
               offset: 0,
-              color: "transparent", // 0% 处的颜色
+              color: 'transparent' // 0% 处的颜色
             },
             {
               offset: 0.5,
-              color: "rgb(13,178,220)", // 0% 处的颜色
+              color: 'rgb(13,178,220)' // 0% 处的颜色
             },
             {
               offset: 1,
-              color: "rgb(4,107,187)", // 100% 处的颜色
-            },
-          ],
+              color: 'rgb(4,107,187)' // 100% 处的颜色
+            }
+          ]
         },
-        "transparent",
+        'transparent'
       ],
       hoverAnimation: true,
       legendHoverLink: false,
       labelLine: {
         normal: {
-          show: false,
-        },
+          show: false
+        }
       },
-      data: [],
+      data: []
     }
-  ],
+  ]
 }
 export default {
   components: { BarChart },
+  filters: {
+    numsFilter(msg) {
+      return msg || 0
+    }
+  },
   data() {
     return {
       userOverview: {
         alarmNum: 0,
         offlineNum: 0,
         onlineNum: 0,
-        totalNum: 0,
+        totalNum: 0
       },
       pageflag: true,
       timer: null,
       firstOption: {
-        backgroundColor: "transparent",
+        backgroundColor: 'transparent',
         series: [
           {
             ...option.series[0],
             detail: {
               show: true,
-              offsetCenter: [0, "30%"],
-              color: "#00fdfa",
-              formatter: function (params) {
-                return '监测点：' + params;
+              offsetCenter: [0, '30%'],
+              color: '#00fdfa',
+              formatter: function(params) {
+                return '监测点：' + params
               },
               textStyle: {
-                fontSize: 14,
-              },
-            },
+                fontSize: 14
+              }
+            }
           },
-          {...option.series[1]}
-        ],
+          { ...option.series[1] }
+        ]
       },
       secondOption: {
-        backgroundColor: "transparent",
+        backgroundColor: 'transparent',
         series: [
           {
             ...option.series[0],
             detail: {
               show: true,
-              offsetCenter: [0, "30%"],
-              color: "#00fdfa",
-              formatter: function (params) {
-                return '在线：' + params;
+              offsetCenter: [0, '30%'],
+              color: '#00fdfa',
+              formatter: function(params) {
+                return '在线：' + params
               },
               textStyle: {
-                fontSize: 14,
-              },
-            },
+                fontSize: 14
+              }
+            }
           },
-          {...option.series[1]}
-        ],
+          { ...option.series[1] }
+        ]
       },
       thirdOption: {
-        backgroundColor: "transparent",
+        backgroundColor: 'transparent',
         series: [
           {
             ...option.series[0],
             detail: {
               show: true,
-              offsetCenter: [0, "30%"],
-              color: "#00fdfa",
-              formatter: function (params) {
-                return '离线：' + params;
+              offsetCenter: [0, '30%'],
+              color: '#00fdfa',
+              formatter: function(params) {
+                return '离线：' + params
               },
               textStyle: {
-                fontSize: 14,
-              },
-            },
+                fontSize: 14
+              }
+            }
           },
-          {...option.series[1]}
-        ],
+          { ...option.series[1] }
+        ]
       },
       config: {
         number: [100],
@@ -224,8 +223,8 @@ export default {
         style: {
           ...style,
           // stroke: "#00fdfa",
-          fill: "#00fdfa",
-        },
+          fill: '#00fdfa'
+        }
       },
       onlineconfig: {
         number: [0],
@@ -233,8 +232,8 @@ export default {
         style: {
           ...style,
           // stroke: "#07f7a8",
-          fill: "#07f7a8",
-        },
+          fill: '#07f7a8'
+        }
       },
       offlineconfig: {
         number: [0],
@@ -242,8 +241,8 @@ export default {
         style: {
           ...style,
           // stroke: "#e3b337",
-          fill: "#e3b337",
-        },
+          fill: '#e3b337'
+        }
       },
       laramnumconfig: {
         number: [0],
@@ -251,21 +250,16 @@ export default {
         style: {
           ...style,
           // stroke: "#f5023d",
-          fill: "#f5023d",
-        },
+          fill: '#f5023d'
+        }
       },
       deviceNum: 0,
       deviceEnableNum: 0,
       deviceli: 0
-    };
-  },
-  filters: {
-    numsFilter(msg) {
-      return msg || 0;
-    },
+    }
   },
   mounted() {
-    this.fetchData();
+    this.fetchData()
     this.switper()
   },
   beforeDestroy() {
@@ -293,31 +287,30 @@ export default {
     },
 
     async fetchData() {
-      const res = await getDeviceNum();
+      const res = await getDeviceNum()
 
       this.firstOption.series[0].data = [{ value: res.data.deviceNum }]
       this.firstOption.series[0].max = res.data.deviceNum
       this.firstOption.series[1].data = [
-        { value: (parseInt(res.data.deviceNum/2) * (res.data.deviceNum)) / res.data.deviceNum },
-        { value: res.data.deviceNum - (parseInt(res.data.deviceNum/2) * (res.data.deviceNum)) / res.data.deviceNum },
+        { value: (parseInt(res.data.deviceNum / 2) * (res.data.deviceNum)) / res.data.deviceNum },
+        { value: res.data.deviceNum - (parseInt(res.data.deviceNum / 2) * (res.data.deviceNum)) / res.data.deviceNum }
       ]
 
       this.secondOption.series[0].data = [{ value: res.data.deviceEnableNum }]
       this.secondOption.series[0].max = res.data.deviceNum
       this.secondOption.series[1].data = [
-        { value: (parseInt(res.data.deviceNum/2) * (res.data.deviceEnableNum)) / res.data.deviceNum },
-        { value: res.data.deviceNum - (parseInt(res.data.deviceNum/2) * (res.data.deviceEnableNum)) / res.data.deviceNum },
+        { value: (parseInt(res.data.deviceNum / 2) * (res.data.deviceEnableNum)) / res.data.deviceNum },
+        { value: res.data.deviceNum - (parseInt(res.data.deviceNum / 2) * (res.data.deviceEnableNum)) / res.data.deviceNum }
       ]
 
       this.thirdOption.series[0].data = [{ value: res.data.deviceli }]
       this.thirdOption.series[0].max = res.data.deviceNum
       this.thirdOption.series[1].data = [
-        { value: (parseInt(res.data.deviceNum/2) * (res.data.deviceli)) / res.data.deviceNum },
-        { value: res.data.deviceNum - (parseInt(res.data.deviceNum/2) * (res.data.deviceli)) / res.data.deviceNum },
+        { value: (parseInt(res.data.deviceNum / 2) * (res.data.deviceli)) / res.data.deviceNum },
+        { value: res.data.deviceNum - (parseInt(res.data.deviceNum / 2) * (res.data.deviceli)) / res.data.deviceNum }
       ]
 
-      console.log(this.firstOption.series,'0serous')
-
+      console.log(this.firstOption.series, '0serous')
 
       this.initChart()
 
@@ -333,7 +326,6 @@ export default {
       //   ...this.offlineconfig,
       //   number: [res.data.deviceli]
       // };
-
     },
 
     toPage(path, params) {
@@ -349,49 +341,15 @@ export default {
         this.timer = null
       }
     },
-    getData() {
-      this.pageflag = true;
-      currentGET("big2").then((res) => {
-        if (!this.timer) {
-          console.log("设备总览", res);
-        }
-        if (res.success) {
-          this.userOverview = res.data;
-          this.onlineconfig = {
-            ...this.onlineconfig,
-            number: [res.data.onlineNum]
-          }
-          this.config = {
-            ...this.config,
-            number: [res.data.totalNum]
-          }
-          this.offlineconfig = {
-            ...this.offlineconfig,
-            number: [res.data.offlineNum]
-          }
-          this.laramnumconfig = {
-            ...this.laramnumconfig,
-            number: [res.data.alarmNum]
-          }
-          this.switper()
-        } else {
-          this.pageflag = false;
-          this.$Message.warning(res.msg);
-        }
-      });
-    },
-    //轮询
+    // 轮询
     switper() {
       if (this.timer) {
         return
       }
-      // let looper = (a) => {
-      //   this.getData()
-      // };
-      this.timer = setInterval(this.fetchData, 6000);
-    },
-  },
-};
+      this.timer = setInterval(this.fetchData, 6000)
+    }
+  }
+}
 </script>
 <style lang='scss' scoped>
 .user_Overview {

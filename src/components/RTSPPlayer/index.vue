@@ -8,7 +8,7 @@
       <el-col>
         <div class="grid-content bg-purple">
           <div class="block" style="margin-top: 25px;">
-            <video ref="flvVideo" id="flv-1" height="500" muted controls loop></video>
+            <video id="flv-1" ref="flvVideo" height="500" muted controls loop />
           </div>
         </div>
       </el-col>
@@ -16,12 +16,11 @@
   </el-card>
 </template>
 
-
 <script>
-import flvjs from 'flv.js';
+import flvjs from 'flv.js'
 
 export default {
-  name: 'player',
+  name: 'Player',
   props: {
     rtspUrl: {
       required: true,
@@ -38,171 +37,152 @@ export default {
     inline: {
       type: Boolean,
       default: false
-    },
+    }
   },
 
   data() {
     return {
-      flvPlayer: null,
-    };
+      flvPlayer: null
+    }
   },
 
   computed: {
     cardStyle() {
-      return this.inline ? {} : { zIndex: 1000 };
+      return this.inline ? {} : { zIndex: 1000 }
+    }
+  },
+  watch: {
+    rtspUrl(newVal, oldVal) {
+      this.$nextTick(() => {
+        this.initFLVPlayer()
+      })
+    },
+
+    // 播放器显示时，如果本身有 flv 则直接继续播放
+    viewProof(newVal, oldVal) {
+      if (newVal === true) {
+        if (this.flvPlayer != null) {
+          this.flvPlayer.play()
+          this.flvPlayer.muted = false
+          return
+        }
+        if (this.rtspUrl) {
+          this.$nextTick(() => {
+            this.initFLVPlayer()
+          })
+        }
+      }
     }
   },
 
   mounted() {
     this.$nextTick(() => {
       if (this.viewProof && this.rtspUrl) {
-        this.initFLVPlayer();
+        this.initFLVPlayer()
       }
-    });
+    })
   },
 
   beforeDestroy() {
-    this.closeFLVPlayer(true);
+    this.closeFLVPlayer(true)
   },
 
   methods: {
     isRtspUrl(url) {
-      return /^rtsp:\/\//i.test(url || '');
+      return /^rtsp:\/\//i.test(url || '')
     },
 
     isHttpMediaUrl(url) {
-      return /^(https?:\/\/|wss?:\/\/|\/)/i.test(url || '');
+      return /^(https?:\/\/|wss?:\/\/|\/)/i.test(url || '')
     },
 
     isFlvUrl(url) {
-      return /\.flv($|[?#])/i.test(url || '');
+      return /\.flv($|[?#])/i.test(url || '')
     },
 
     playHttpMedia(url) {
-      const videoElement = this.$refs.flvVideo;
-      if (!videoElement || !url) return;
-      if (this.flvPlayer != null) this.closeFLVPlayer(true);
-      videoElement.src = url;
-      videoElement.muted = false;
+      const videoElement = this.$refs.flvVideo
+      if (!videoElement || !url) return
+      if (this.flvPlayer != null) this.closeFLVPlayer(true)
+      videoElement.src = url
+      videoElement.muted = false
       videoElement.play().catch(() => {
-      });
+      })
     },
 
     playFlvMedia(url) {
-      const videoElement = this.$refs.flvVideo;
-      if (!videoElement || !url) return;
-      if (this.flvPlayer != null) this.closeFLVPlayer(true);
+      const videoElement = this.$refs.flvVideo
+      if (!videoElement || !url) return
+      if (this.flvPlayer != null) this.closeFLVPlayer(true)
 
       if (flvjs.isSupported()) {
         this.flvPlayer = flvjs.createPlayer({
           isLive: true,
           type: 'flv',
           url: url
-        });
-        this.flvPlayer.attachMediaElement(videoElement);
-        this.flvPlayer.load();
-        this.flvPlayer.play();
+        })
+        this.flvPlayer.attachMediaElement(videoElement)
+        this.flvPlayer.load()
+        this.flvPlayer.play()
       }
     },
 
     initFLVPlayer() {
-      const videoElement = this.$refs.flvVideo;
-      if (!videoElement || !this.rtspUrl) return;
+      const videoElement = this.$refs.flvVideo
+      if (!videoElement || !this.rtspUrl) return
 
       if (this.isHttpMediaUrl(this.rtspUrl) && this.isFlvUrl(this.rtspUrl)) {
-        this.playFlvMedia(this.rtspUrl);
-        return;
+        this.playFlvMedia(this.rtspUrl)
+        return
       }
 
       if (/^(https?:\/\/|\/)/i.test(this.rtspUrl)) {
-        this.playHttpMedia(this.rtspUrl);
-        return;
+        this.playHttpMedia(this.rtspUrl)
+        return
       }
 
       if (!this.isRtspUrl(this.rtspUrl)) {
-        if (this.flvPlayer != null) this.closeFLVPlayer(true);
-        return;
+        if (this.flvPlayer != null) this.closeFLVPlayer(true)
+        return
       }
 
-      const url = `ws://192.168.125.30:9117/rtsp?url=${btoa(this.rtspUrl)}`;
-      // 销毁
-      if (this.flvPlayer != null) this.closeFLVPlayer(true);
-
-      if (flvjs.isSupported()) {
-        console.log("正在加载播放器……");
-        this.flvPlayer = flvjs.createPlayer({
-          isLive: true,
-          type: 'flv',
-          url: url,
-          enableWorker: true,
-          enableStashBuffer: false,
-          stashInitialSize: 128
-        });
-
-        this.flvPlayer.attachMediaElement(videoElement);
-        this.flvPlayer.load();
-        this.flvPlayer.play();
-        this.flvPlayer.muted = false; // 确保新播放器不是静音状态
-      }
+      if (this.flvPlayer != null) this.closeFLVPlayer(true)
+      this.$message.warning('未获取到浏览器可播放的视频地址，请刷新设备状态后重试')
     },
 
-
     closeFLVPlayer(realClose) {
-      const videoElement = this.$refs.flvVideo;
+      const videoElement = this.$refs.flvVideo
       if (this.flvPlayer != null) {
-        if (realClose == true) {
-          console.log("正在销毁播放器……");
-          this.flvPlayer.unload();
-          this.flvPlayer.detachMediaElement();
-          this.flvPlayer.destroy();
-          this.flvPlayer = null;
-          console.log("销毁完毕……");
+        if (realClose === true) {
+          console.log('正在销毁播放器……')
+          this.flvPlayer.unload()
+          this.flvPlayer.detachMediaElement()
+          this.flvPlayer.destroy()
+          this.flvPlayer = null
+          console.log('销毁完毕……')
         } else {
-          this.flvPlayer.pause();
-          this.flvPlayer.muted = true; // 静音
+          this.flvPlayer.pause()
+          this.flvPlayer.muted = true // 静音
         }
       }
 
       if (videoElement) {
-        if (realClose == true) {
-          videoElement.pause();
-          videoElement.removeAttribute('src');
-          videoElement.load();
+        if (realClose === true) {
+          videoElement.pause()
+          videoElement.removeAttribute('src')
+          videoElement.load()
         } else {
-          videoElement.pause();
+          videoElement.pause()
         }
       }
     },
 
     closeProof() {
-      this.closeFLVPlayer(false);
-      this.$emit('closeProof');
-    },
-
-  },
-  watch: {
-    rtspUrl(newVal, oldVal) {
-      this.$nextTick(() => {
-        this.initFLVPlayer();
-      });
-    },
-
-    // 播放器显示时，如果本身有 flv 则直接继续播放
-    viewProof(newVal, oldVal) {
-      if (newVal == true) {
-        if (this.flvPlayer != null) {
-          this.flvPlayer.play();
-          this.flvPlayer.muted = false;
-          return;
-        }
-        if (this.rtspUrl) {
-          this.$nextTick(() => {
-            this.initFLVPlayer();
-          });
-        }
-      }
+      this.closeFLVPlayer(false)
+      this.$emit('closeProof')
     }
-  },
+
+  }
 }
 </script>
 

@@ -1,9 +1,9 @@
 const state = {
-  dict: new Array()
+  dict: []
 }
 const mutations = {
   SET_DICT: (state, { key, value }) => {
-    if (key !== null && key !== "") {
+    if (key !== null && key !== '') {
       state.dict.push({
         key: key,
         value: value
@@ -13,16 +13,17 @@ const mutations = {
   REMOVE_DICT: (state, key) => {
     try {
       for (let i = 0; i < state.dict.length; i++) {
-        if (state.dict[i].key == key) {
+        if (String(state.dict[i].key) === String(key)) {
           state.dict.splice(i, 1)
           return true
         }
       }
     } catch (e) {
+      // 解析失败时忽略，返回空数组
     }
   },
   CLEAN_DICT: (state) => {
-    state.dict = new Array()
+    state.dict = []
   }
 }
 

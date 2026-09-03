@@ -1,5 +1,5 @@
 <template>
-  <div class="alarm-popup-container" v-if="messageVisible">
+  <div v-if="messageVisible" class="alarm-popup-container">
     <el-card class="box-card tech-alarm-card">
       <div slot="header" class="clearfix popup-header">
         <span class="popup-title">报警推送</span>
@@ -45,15 +45,15 @@
 
 <script>
 export default {
-  name: "WebsocketComponent",
+  name: 'WebsocketComponent',
   data() {
     return {
       messageVisible: false,
       showMessage: {},
       websocket: null, // WebSocket对象
       reconnectInterval: 3000, // 重连间隔时间（毫秒）
-      heartbeatInterval: null, // 心跳定时器
-    };
+      heartbeatInterval: null // 心跳定时器
+    }
   },
 
   computed: {
@@ -64,48 +64,52 @@ export default {
   },
 
   created() {
-    this.setupWebSocket();
+    this.setupWebSocket()
+  },
+
+  beforeDestroy() {
+    this.closeWebSocket()
   },
   methods: {
     getWebSocketUrl() {
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = window.location.host;
-      const wsPath = '/websocket/message';
-      return `${wsProtocol}//${wsHost}${wsPath}`;
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      const wsHost = window.location.host
+      const wsPath = '/websocket/message'
+      return `${wsProtocol}//${wsHost}${wsPath}`
     },
 
     setupWebSocket() {
-      this.websocket = new WebSocket(this.getWebSocketUrl());
-      this.websocket.onopen = this.onWebSocketOpen;
-      this.websocket.onmessage = this.onWebSocketMessage;
-      this.websocket.onclose = this.onWebSocketClose;
+      this.websocket = new WebSocket(this.getWebSocketUrl())
+      this.websocket.onopen = this.onWebSocketOpen
+      this.websocket.onmessage = this.onWebSocketMessage
+      this.websocket.onclose = this.onWebSocketClose
     },
     closeWebSocket() {
       if (this.websocket) {
-        this.websocket.close(); // 关闭WebSocket连接
+        this.websocket.close() // 关闭WebSocket连接
       }
     },
 
     onWebSocketOpen() {
-      console.log("WebSocket 连接成功！");
-      this.startHeartbeat();
+      console.log('WebSocket 连接成功！')
+      this.startHeartbeat()
     },
 
     onWebSocketMessage(event) {
-      const data = event.data;
+      const data = event.data
 
       if (typeof data === 'string' && (data.startsWith('{') || data.startsWith('['))) {
         try {
-          const message = JSON.parse(data);
+          const message = JSON.parse(data)
           if (message.newWarning !== undefined) {
-            this.messageVisible = true;
-            this.showMessage = message.newWarning;
+            this.messageVisible = true
+            this.showMessage = message.newWarning
             window.dispatchEvent(new CustomEvent('sva:alarm-push', {
               detail: {
                 ts: Date.now(),
                 warning: message.newWarning
               }
-            }));
+            }))
             return
           }
           if (message.type === 'detect.frame') {
@@ -126,42 +130,38 @@ export default {
             }))
           }
         } catch (error) {
-          console.error("Failed to parse the received message as JSON:", error);
+          console.error('Failed to parse the received message as JSON:', error)
         }
       }
     },
 
     onWebSocketClose() {
-      console.log("WebSocket 连接关闭！");
-      this.stopHeartbeat();
-      setTimeout(this.setupWebSocket, this.reconnectInterval);
+      console.log('WebSocket 连接关闭！')
+      this.stopHeartbeat()
+      setTimeout(this.setupWebSocket, this.reconnectInterval)
     },
 
     sendMessage(message) {
       if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-        this.websocket.send(message); // 发送消息到 WebSocket 服务器
+        this.websocket.send(message) // 发送消息到 WebSocket 服务器
       }
     },
 
     startHeartbeat() {
       this.heartbeatInterval = setInterval(() => {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-          this.websocket.send("ping");
+          this.websocket.send('ping')
         }
-      }, 10000); // 每 10 秒发送一次心跳
+      }, 10000) // 每 10 秒发送一次心跳
     },
 
     stopHeartbeat() {
       if (this.heartbeatInterval) {
-        clearInterval(this.heartbeatInterval); // 停止心跳检测定时器
+        clearInterval(this.heartbeatInterval) // 停止心跳检测定时器
       }
-    },
-  },
-
-  beforeDestroy() {
-    this.closeWebSocket();
-  },
-};
+    }
+  }
+}
 </script>
 <style lang="scss" scoped>
 .alarm-popup-container {

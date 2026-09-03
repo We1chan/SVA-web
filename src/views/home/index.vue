@@ -1,25 +1,25 @@
 <template>
-  <div class="container-work" ref="kanban">
+  <div ref="kanban" class="container-work">
     <div class="content">
       <div class="left">
         <!-- 最上方的报警数量展示 -->
         <div class="card" style="padding-top: 10px;">
           <div>
-            <hazardcount :org-index="orgIndex"></hazardcount>
+            <hazardcount :org-index="orgIndex" />
           </div>
         </div>
 
         <!-- 报警趋势分析以及报警治理增长率分析 -->
         <div class="card">
           <div>
-            <hazardtrend :org-index="orgIndex"></hazardtrend>
+            <hazardtrend :org-index="orgIndex" />
           </div>
         </div>
 
         <!-- 报警专业整体分布/报警等级分布/报警类型分布 -->
         <div class="card">
           <div>
-            <hazarddistribution :org-index="orgIndex"></hazarddistribution>
+            <hazarddistribution :org-index="orgIndex" />
           </div>
         </div>
       </div>
@@ -29,11 +29,18 @@
         <div class="card right-card more announcement-card">
           <div class="section-title">报警挂牌公示</div>
           <div class="section-body">
-            <tiny-grid class="announcement-grid" :data="handleData" border :edit-config="{ trigger: 'click', mode: 'cell', showStatus: true }"
-                       highlight-current-row @current-change="handleClick" style="cursor: pointer;">
-              <tiny-grid-column field="handleEvent" title="报警事件" min-width="120"></tiny-grid-column>
-              <tiny-grid-column field="handleLoc" title="事件位置" min-width="160"></tiny-grid-column>
-              <tiny-grid-column field="handleOrg" title="处置人" width="90"></tiny-grid-column>
+            <tiny-grid
+              class="announcement-grid"
+              :data="handleData"
+              border
+              :edit-config="{ trigger: 'click', mode: 'cell', showStatus: true }"
+              highlight-current-row
+              style="cursor: pointer;"
+              @current-change="handleClick"
+            >
+              <tiny-grid-column field="handleEvent" title="报警事件" min-width="120" />
+              <tiny-grid-column field="handleLoc" title="事件位置" min-width="160" />
+              <tiny-grid-column field="handleOrg" title="处置人" width="90" />
             </tiny-grid>
           </div>
         </div>
@@ -43,52 +50,55 @@
 </template>
 
 <script>
-import hazardcount from "./components/hazard-count.vue"
-import hazardtrend from "./components/hazard-trend.vue"
-import hazarddistribution from "./components/hazard-distribution.vue"
-import store from "@/store"
+import hazardcount from './components/hazard-count.vue'
+import hazardtrend from './components/hazard-trend.vue'
+import hazarddistribution from './components/hazard-distribution.vue'
+import store from '@/store'
 import {
   Grid as TinyGrid,
-  GridColumn as TinyGridColumn,
-  Option as TinyOption,
-  Select as TinySelect
-} from '@opentiny/vue';
-import {getDeptList, getHandleData} from '@/api/system/kanban';
+  GridColumn as TinyGridColumn
+} from '@opentiny/vue'
+import { getDeptList, getHandleData } from '@/api/system/kanban'
 
 export default {
-  name: "Index",
+  name: 'Index',
   components: {
-    hazardcount, hazardtrend, hazarddistribution, TinyGrid, TinyGridColumn, TinySelect,
-    TinyOption
+    hazardcount, hazardtrend, hazarddistribution, TinyGrid, TinyGridColumn
   },
   data() {
     return {
       handleData: [],
       orgOptions: [],
-      orgIndex: "",
+      orgIndex: '',
       wids: [],
-      divApp: document.documentElement,
-    };
+      divApp: document.documentElement
+    }
   },
 
   computed: {
     kanban() {
-      return this.$refs["kanban"];
-    },
+      return this.$refs['kanban']
+    }
+  },
+  mounted() {
+    this.fetchData()
+    this.$nextTick(() => {
+      this.kanban.parentNode.style.backgroundColor = 'white'
+    })
   },
 
   methods: {
     // 获取报警挂牌公示数据以及组织列表
     async fetchData() {
       try {
-        const permissions = store.getters && store.getters.permissions;
-        const all_permission = "*:*:*";
-        const permissionFlag = "getDeptList";
+        const permissions = store.getters && store.getters.permissions
+        const all_permission = '*:*:*'
+        const permissionFlag = 'getDeptList'
         const hasPermissions = permissions.some(permission => {
           return all_permission === permission || permissionFlag.includes(permission)
         })
         if (hasPermissions) {
-          const deptListRes = await getDeptList();
+          const deptListRes = await getDeptList()
           this.orgOptions = [
             {
               value: '',
@@ -98,34 +108,28 @@ export default {
               value: item.orgIndex,
               label: item.deptName
             }))
-          ];
+          ]
         }
-        const HandleDataRes = await getHandleData(this.orgIndex);
+        const HandleDataRes = await getHandleData(this.orgIndex)
         this.handleData = HandleDataRes.data.map((item, index) => {
-          this.wids.push(item.w_id);
+          this.wids.push(item.w_id)
           return {
             id: index,
             handleEvent: item.alarm_type_name,
             handleLoc: item.device_name,
-            handleOrg: item.h_org_name,
-          };
-        });
+            handleOrg: item.h_org_name
+          }
+        })
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     },
 
     handleClick(event) {
-      this.$router.push({path: "/warning/warning", query: {withQue: 7, wid: this.wids[event.rowIndex]}});
+      this.$router.push({ path: '/warning/warning', query: { withQue: 7, wid: this.wids[event.rowIndex] }})
     }
-  },
-  mounted() {
-    this.fetchData();
-    this.$nextTick(() => {
-      this.kanban.parentNode.style.backgroundColor = "white";
-    })
   }
-};
+}
 </script>
 
 <style scoped lang="less">
@@ -203,7 +207,6 @@ export default {
     .announcement-card.more {
       min-height: auto;
     }
-
 
     .more {
       min-height: 750px;

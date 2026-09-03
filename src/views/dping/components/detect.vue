@@ -1,6 +1,6 @@
 <template>
   <div class="avb">
-    <iframe :src="embeddedPageUrl" class="scaled-iframe" width="100%" height="550px"></iframe>
+    <iframe :src="embeddedPageUrl" class="scaled-iframe" width="100%" height="550px" />
     <!-- <el-row :gutter="20">
       <el-col :span="8" v-for="(item, index) in deviceImages.slice(0, 3)" :key="index">
         <div class="image-container">
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { getAlarmPhoto } from '@/api/system/kanban';
+import { getAlarmPhoto } from '@/api/system/kanban'
 
 export default {
   data() {
@@ -34,44 +34,43 @@ export default {
       deviceImages: [
       ],
       detectRequest: {
-        id: "manual",
-        detector_name: "pytorch",
+        id: 'manual',
+        detector_name: 'pytorch',
         preprocess: [],
         detect: {
-          "*": 50
+          '*': 50
         },
         regions: [
-          { "top": 0.1, "left": 0.1, "bottom": 0.9, "right": 0.9, "detect": { "*": 50 }, "covers": false }
+          { 'top': 0.1, 'left': 0.1, 'bottom': 0.9, 'right': 0.9, 'detect': { '*': 50 }, 'covers': false }
         ],
-        data: "rtsp://rtspstream:408c3c56c37eda5492b06bc8137551dc@zephyr.rtsp.stream/movie"
+        data: 'rtsp://rtspstream:408c3c56c37eda5492b06bc8137551dc@zephyr.rtsp.stream/movie'
       }
-    };
-  },
-
-  mounted() {
-    this.fetchData();
+    }
   },
 
   computed: {
     embeddedPageUrl: function() {
-      return "http://10.129.192.13:8080/stream?detect_request=" + encodeURIComponent(JSON.stringify(this.detectRequest));
+      return 'http://10.129.192.13:8080/stream?detect_request=' + encodeURIComponent(JSON.stringify(this.detectRequest))
     }
+  },
+
+  mounted() {
+    this.fetchData()
   },
 
   methods: {
     async fetchData() {
       try {
-        const res = await getAlarmPhoto();
-        if (res.code != 200) throw new Error(res.msg);
-        this.deviceImages = res.data;
+        const res = await getAlarmPhoto()
+        if (Number(res.code) !== 200) throw new Error(res.msg)
+        this.deviceImages = res.data
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>
-
 
 <style lang='scss' scoped>
 .avb {
@@ -93,7 +92,6 @@ export default {
   display: inline-block;
   margin-top: 10px;
 }
-
 
 .caption {
   text-align: center;

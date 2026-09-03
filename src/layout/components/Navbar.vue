@@ -1,10 +1,14 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container"
-               @toggleClick="toggleSideBar"/>
+    <hamburger
+      id="hamburger-container"
+      :is-active="sidebar.opened"
+      class="hamburger-container"
+      @toggleClick="toggleSideBar"
+    />
 
-    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" v-if="!topNav"/>
-    <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav"/>
+    <breadcrumb v-if="!topNav" id="breadcrumb-container" class="breadcrumb-container" />
+    <top-nav v-if="topNav" id="topmenu-container" class="topmenu-container" />
 
     <div class="right-menu">
       <!-- <template v-if="device!=='mobile'">
@@ -26,15 +30,19 @@
 
       </template> -->
       <template>
-        <el-button type="text" icon="el-icon-data-line" @click="jump2DP"
-                   class="right-menu-item hover-effect">大屏
+        <el-button
+          type="text"
+          icon="el-icon-data-line"
+          class="right-menu-item hover-effect"
+          @click="jump2DP"
+        >大屏
         </el-button>
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
           <img :src="avatar" class="user-avatar">
-          <i class="el-icon-caret-bottom"/>
+          <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/user/profile">
@@ -53,26 +61,15 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
+import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
-import Screenfull from '@/components/Screenfull'
-import SizeSelect from '@/components/SizeSelect'
-import Search from '@/components/HeaderSearch'
-import RuoYiGit from '@/components/RuoYi/Git'
-import RuoYiDoc from '@/components/RuoYi/Doc'
-
 export default {
   components: {
     Breadcrumb,
     TopNav,
-    Hamburger,
-    Screenfull,
-    SizeSelect,
-    Search,
-    RuoYiGit,
-    RuoYiDoc
+    Hamburger
   },
 
   computed: {
@@ -100,16 +97,16 @@ export default {
   },
   methods: {
     jump2End() {
-      const currentProtocol = window.location.protocol;
-      const currentHost = window.location.hostname;
-      const newPort = '9111';
-      const newUrl = `${currentProtocol}//${currentHost}:${newPort}/login`;
-      window.open(newUrl, '后台');
+      const currentProtocol = window.location.protocol
+      const currentHost = window.location.hostname
+      const newPort = '9111'
+      const newUrl = `${currentProtocol}//${currentHost}:${newPort}/login`
+      window.open(newUrl, '后台')
     },
 
     jump2DP() {
-      this.$router.push({path: "/dping"}).catch(() => {
-      });
+      this.$router.push({ path: '/dping' }).catch(() => {
+      })
     },
 
     toggleSideBar() {
@@ -118,10 +115,10 @@ export default {
     async logout() {
       this.$modal.confirm('确定注销并退出系统吗？').then(() => {
         this.$store.dispatch('LogOut').then(() => {
-          location.href = '/index';
-        });
+          location.href = '/index'
+        })
       }).catch(() => {
-      });
+      })
     }
   }
 }

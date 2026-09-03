@@ -6,7 +6,7 @@
         <router-link :to="{ path: '/warning/warning', query: { withQue: 2 } }">
           <div class="col">
             <div class="title" style="margin: 0px auto 0px auto;">
-              <img src="@/assets/images/plan-1.png"/>
+              <img src="@/assets/images/plan-1.png">
               <span>本月报警数量</span>
             </div>
             <div>
@@ -16,17 +16,17 @@
             <div>
               <span class="increase">
                 环比增长
-                <span v-if="monthWarning.QOQ > 0"><img src="@/assets/images/home-up.png" class="image"/></span>
-                <span v-else-if="monthWarning.QOQ  < 0"><img src="@/assets/images/home-down.png" class="image"/></span>
-                <span v-else> </span>
+                <span v-if="monthWarning.QOQ > 0"><img src="@/assets/images/home-up.png" class="image"></span>
+                <span v-else-if="monthWarning.QOQ < 0"><img src="@/assets/images/home-down.png" class="image"></span>
+                <span v-else />
                 <span>{{ monthWarning.QOQ }}%</span>
               </span>
 
               <span class="increase">
                 同比增长
-                <span v-if="monthWarning.YOY > 0"><img src="@/assets/images/home-up.png" class="image"/></span>
-                <span v-else-if="monthWarning.YOY  < 0"><img src="@/assets/images/home-down.png" class="image"/></span>
-                <span v-else> </span>
+                <span v-if="monthWarning.YOY > 0"><img src="@/assets/images/home-up.png" class="image"></span>
+                <span v-else-if="monthWarning.YOY < 0"><img src="@/assets/images/home-down.png" class="image"></span>
+                <span v-else />
                 <span>{{ monthWarning.YOY }}%</span>
               </span>
             </div>
@@ -76,7 +76,7 @@
       <tiny-col>
         <div class="col">
           <div class="title" style="margin: 0px auto 0px auto;">
-            <img src="@/assets/images/plan-1.png"/>
+            <img src="@/assets/images/plan-1.png">
             <span>本月报警处置逾期数量</span>
           </div>
           <div>
@@ -86,19 +86,23 @@
           <div>
             <span class="increase">
               环比增长
-              <span v-if="monthOverdueWaring.QOQ > 0"><img src="@/assets/images/home-up.png" class="image"/></span>
-              <span v-else-if="monthOverdueWaring.QOQ  < 0"><img src="@/assets/images/home-down.png"
-                                                                 class="image"/></span>
-              <span v-else> </span>
+              <span v-if="monthOverdueWaring.QOQ > 0"><img src="@/assets/images/home-up.png" class="image"></span>
+              <span v-else-if="monthOverdueWaring.QOQ < 0"><img
+                src="@/assets/images/home-down.png"
+                class="image"
+              ></span>
+              <span v-else />
               <span>{{ monthOverdueWaring.QOQ }}%</span>
             </span>
 
             <span class="increase">
               同比增长
-              <span v-if="monthOverdueWaring.YOY > 0"><img src="@/assets/images/home-up.png" class="image"/></span>
-              <span v-else-if="monthOverdueWaring.YOY  < 0"><img src="@/assets/images/home-down.png"
-                                                                 class="image"/></span>
-              <span v-else> </span>
+              <span v-if="monthOverdueWaring.YOY > 0"><img src="@/assets/images/home-up.png" class="image"></span>
+              <span v-else-if="monthOverdueWaring.YOY < 0"><img
+                src="@/assets/images/home-down.png"
+                class="image"
+              ></span>
+              <span v-else />
               <span>{{ monthOverdueWaring.YOY }}%</span>
             </span>
           </div>
@@ -113,16 +117,20 @@
       <tiny-col>
         <div class="col">
           <div class="title" style="margin: 0px auto 0px auto;">
-            <img src="@/assets/images/plan-1.png"/>
+            <img src="@/assets/images/plan-1.png">
             <span>本月处置报警数量及处置率</span>
           </div>
           <div>
             <span class="plan-pass">{{ monthHandle.rectificationNum }}</span>
             <span class="num">&nbsp;/ 条</span>
           </div>
-          <tiny-progress type="dashboard" :percentage="monthHandle.rate" :color="customColors" :width="70"
-                         style="color: red;">
-          </tiny-progress>
+          <tiny-progress
+            type="dashboard"
+            :percentage="monthHandle.rate"
+            :color="customColors"
+            :width="70"
+            style="color: red;"
+          />
         </div>
       </tiny-col>
     </tiny-row>
@@ -130,11 +138,11 @@
 </template>
 
 <script>
-import {getMonthHandle, getMonthMajorWaring, getMonthOverdueWaring, getMonthWaring} from '@/api/system/kanban';
-import {Col as TinyCol, Layout as TinyLayout, Progress as TinyProgress, Row as TinyRow} from '@opentiny/vue';
+import { getMonthHandle, getMonthMajorWaring, getMonthOverdueWaring, getMonthWaring } from '@/api/system/kanban'
+import { Col as TinyCol, Layout as TinyLayout, Progress as TinyProgress, Row as TinyRow } from '@opentiny/vue'
 
 export default {
-  components: {TinyLayout, TinyRow, TinyCol, TinyProgress},
+  components: { TinyLayout, TinyRow, TinyCol, TinyProgress },
   props: {
     orgIndex: {
       type: String,
@@ -144,11 +152,11 @@ export default {
   data() {
     return {
       customColors: [
-        {color: '#f56c6c', percentage: 20},
-        {color: '#e6a23c', percentage: 40},
-        {color: '#5cb87a', percentage: 60},
-        {color: '#1989fa', percentage: 80},
-        {color: '#6f7ad3', percentage: 100}
+        { color: '#f56c6c', percentage: 20 },
+        { color: '#e6a23c', percentage: 40 },
+        { color: '#5cb87a', percentage: 60 },
+        { color: '#1989fa', percentage: 80 },
+        { color: '#6f7ad3', percentage: 100 }
       ],
       monthWarning: {
         QOQ: 0,
@@ -172,11 +180,17 @@ export default {
         rectificationNum: 0,
         rate: 0
       }
-    };
+    }
+  },
+
+  watch: {
+    orgIndex(newVal, oldVal) {
+      this.fetchData()
+    }
   },
 
   mounted() {
-    this.fetchData();
+    this.fetchData()
   },
 
   methods: {
@@ -192,24 +206,18 @@ export default {
           getMonthMajorWaring(this.orgIndex),
           getMonthOverdueWaring(this.orgIndex),
           getMonthHandle(this.orgIndex)
-        ]);
+        ])
 
-        this.monthWarning = Object.assign({}, monthWarningResponse.data);
-        this.monthMajorWaring = Object.assign({}, monthMajorWaringResponse.data);
-        this.monthOverdueWaring = Object.assign({}, monthOverdueWaringResponse.data);
-        this.monthHandle = Object.assign({}, monthHandleResponse.data);
+        this.monthWarning = Object.assign({}, monthWarningResponse.data)
+        this.monthMajorWaring = Object.assign({}, monthMajorWaringResponse.data)
+        this.monthOverdueWaring = Object.assign({}, monthOverdueWaringResponse.data)
+        this.monthHandle = Object.assign({}, monthHandleResponse.data)
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     }
-  },
-
-  watch: {
-    orgIndex(newVal, oldVal) {
-      this.fetchData();
-    }
   }
-};
+}
 </script>
 
 <style scoped lang="less">

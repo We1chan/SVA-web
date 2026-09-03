@@ -1,6 +1,6 @@
 <template>
   <div class="scale-contain">
-    <ScaleScreen :width="1920" :height="1080" class="scale-wrap" :selfAdaption="selfAdaption" :auto-scale="{ x: true, y: false }">
+    <ScaleScreen :width="1920" :height="1080" class="scale-wrap" :self-adaption="selfAdaption" :auto-scale="{ x: true, y: false }">
       <div class="bg">
         <dv-loading v-if="loading">Loading...</dv-loading>
         <div v-else class="host-body">
@@ -29,13 +29,17 @@
             <div class="content_left">
               <!-- 1. 监测点 -->
               <ItemWrap class="content_left_top left-box-bg dp-enter-lite" title="监测点">
-                <MonitoringPoints></MonitoringPoints>
+                <MonitoringPoints />
               </ItemWrap>
 
               <!-- 2. 处置情况 -->
-              <ItemWrap class="content_left_bottom left-box-bg dp-enter-lite" title="处置情况" title-offset-y="-1px"
-                        style="padding: 0 10px 16px 10px">
-                <WarningSummary/>
+              <ItemWrap
+                class="content_left_bottom left-box-bg dp-enter-lite"
+                title="处置情况"
+                title-offset-y="-1px"
+                style="padding: 0 10px 16px 10px"
+              >
+                <WarningSummary />
               </ItemWrap>
             </div>
 
@@ -65,36 +69,53 @@
                     </div>
                   </div>
                   <div class="center-panel-body">
-                    <CenterSwitchPanel :display-mode="centerDisplayMode" video-fit="contain"/>
+                    <CenterSwitchPanel :display-mode="centerDisplayMode" video-fit="contain" />
                   </div>
                 </div>
                 <!-- <Detect/> -->
               </ItemWrap>
 
               <!-- 4. 实时报警 -->
-              <ItemWrap class="content_center_bottom center-top-box-bg dp-enter-lite" title="待处理报警" title-offset-y="-6px"
-                        title-offset-x="130px">
-                <RealtimeWarning/>
+              <ItemWrap
+                class="content_center_bottom center-top-box-bg dp-enter-lite"
+                title="待处理报警"
+                title-offset-y="-6px"
+                title-offset-x="130px"
+              >
+                <RealtimeWarning />
               </ItemWrap>
             </div>
 
             <div class="contetn_right">
               <!-- 5. 综合统计 -->
-              <ItemWrap class="contetn_left-bottom contetn_lr-item right-box-bg dp-enter-lite" style="margin-top: 19px"
-                        title="综合统计" title-offset-y="-1px" title-offset-x="100px">
-                <TotalSummary/>
+              <ItemWrap
+                class="contetn_left-bottom contetn_lr-item right-box-bg dp-enter-lite"
+                style="margin-top: 19px"
+                title="综合统计"
+                title-offset-y="-1px"
+                title-offset-x="100px"
+              >
+                <TotalSummary />
               </ItemWrap>
 
               <!-- 6. 报警 TOP5 -->
-              <ItemWrap class="contetn_left-bottom contetn_lr-item right-box-bg dp-enter-lite" title="报警统计" title-offset-y="-1px"
-                        title-offset-x="100px">
-                <WarningRank/>
+              <ItemWrap
+                class="contetn_left-bottom contetn_lr-item right-box-bg dp-enter-lite"
+                title="报警统计"
+                title-offset-y="-1px"
+                title-offset-x="100px"
+              >
+                <WarningRank />
               </ItemWrap>
 
               <!-- 7. 报警增长率-->
-              <ItemWrap class="contetn_left-bottom contetn_lr-item right-box-bg dp-enter-lite" title="报警增长率"
-                        title-offset-y="-1px" title-offset-x="100px">
-                <WarningGrowth/>
+              <ItemWrap
+                class="contetn_left-bottom contetn_lr-item right-box-bg dp-enter-lite"
+                title="报警增长率"
+                title-offset-y="-1px"
+                title-offset-x="100px"
+              >
+                <WarningGrowth />
               </ItemWrap>
             </div>
           </div>
@@ -145,8 +166,8 @@
 </template>
 
 <script>
-import {formatTime} from "@/utils/time.js";
-import ScaleScreen from "@/components/scale-screen/scale-screen.vue";
+import { formatTime } from '@/utils/time.js'
+import ScaleScreen from '@/components/scale-screen/scale-screen.vue'
 import ItemWrap from '@/components/item-wrap/item-wrap.vue'
 import MonitoringPoints from './components/monitoring-points.vue'
 import WarningSummary from './components/warning-summary.vue'
@@ -154,9 +175,7 @@ import CenterSwitchPanel from './components/center-switch-panel.vue'
 import TotalSummary from './components/total-summary.vue'
 import WarningRank from './components/warning-rank.vue'
 import WarningGrowth from './components/warning-growth.vue'
-import RealtimeWarning from "./components/realtime-warning.vue";
-import Detect from "./components/detect.vue";
-
+import RealtimeWarning from './components/realtime-warning.vue'
 
 export default {
   components: {
@@ -168,8 +187,13 @@ export default {
     TotalSummary,
     WarningRank,
     WarningGrowth,
-    RealtimeWarning,
-    Detect
+    RealtimeWarning
+  },
+
+  filters: {
+    numsFilter(msg) {
+      return msg || 0
+    }
   },
   data() {
     return {
@@ -182,64 +206,58 @@ export default {
       dateDay: null,
       dateYear: null,
       dateWeek: null,
-      weekday: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
-    };
-  },
-
-  filters: {
-    numsFilter(msg) {
-      return msg || 0;
-    },
+      weekday: ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    }
   },
   created() {
   },
   mounted() {
-    this.timeFn();
-    this.cancelLoading();
-    window.addEventListener('keydown', this.handleGlobalKeydown);
+    this.timeFn()
+    this.cancelLoading()
+    window.addEventListener('keydown', this.handleGlobalKeydown)
   },
   beforeDestroy() {
-    clearInterval(this.timing);
-    window.removeEventListener('keydown', this.handleGlobalKeydown);
+    clearInterval(this.timing)
+    window.removeEventListener('keydown', this.handleGlobalKeydown)
   },
   methods: {
     leaveDp() {
-      this.$router.push({path: "/"}).catch(() => {
-      });
+      this.$router.push({ path: '/' }).catch(() => {
+      })
     },
 
     timeFn() {
       this.timing = setInterval(() => {
-        this.dateDay = formatTime(new Date(), "HH: mm: ss");
-        this.dateYear = formatTime(new Date(), "yyyy-MM-dd");
-        this.dateWeek = this.weekday[new Date().getDay()];
-      }, 1000);
+        this.dateDay = formatTime(new Date(), 'HH: mm: ss')
+        this.dateYear = formatTime(new Date(), 'yyyy-MM-dd')
+        this.dateWeek = this.weekday[new Date().getDay()]
+      }, 1000)
     },
     cancelLoading() {
-      let timer = setTimeout(() => {
-        this.loading = false;
-        clearTimeout(timer);
-      }, 500);
+      const timer = setTimeout(() => {
+        this.loading = false
+        clearTimeout(timer)
+      }, 500)
     },
     openRealtimeFullscreen() {
-      this.centerDisplayMode = 'realtime';
-      this.realtimeFullscreenVisible = true;
+      this.centerDisplayMode = 'realtime'
+      this.realtimeFullscreenVisible = true
     },
     closeRealtimeFullscreen() {
-      this.realtimeFullscreenVisible = false;
+      this.realtimeFullscreenVisible = false
     },
     setFullscreenLayout(size) {
       if (size === 2 || size === 3) {
-        this.fullscreenLayout = size;
+        this.fullscreenLayout = size
       }
     },
     handleGlobalKeydown(event) {
       if (event.key === 'Escape' && this.realtimeFullscreenVisible) {
-        this.closeRealtimeFullscreen();
+        this.closeRealtimeFullscreen()
       }
     }
-  },
-};
+  }
+}
 </script>
 
 <style lang="scss" scoped>

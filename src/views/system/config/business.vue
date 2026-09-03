@@ -39,14 +39,14 @@
 
           <el-form-item>
             <el-button
+              v-hasPermi="['system:config:edit']"
               type="primary"
               :loading="saving"
-              v-hasPermi="['system:config:edit']"
               @click="handleSave"
             >保存</el-button>
             <el-button
-              icon="el-icon-refresh"
               v-hasPermi="['system:config:remove']"
+              icon="el-icon-refresh"
               @click="handleRefreshCache"
             >刷新缓存</el-button>
           </el-form-item>

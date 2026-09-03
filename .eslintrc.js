@@ -145,7 +145,9 @@ module.exports = {
     'no-unsafe-finally': 2,
     'no-unused-vars': [2, {
       'vars': 'all',
-      'args': 'none'
+      'args': 'none',
+      // Allow the "omit property" idiom: const { pageNum, pageSize, ...rest } = query
+      'ignoreRestSiblings': true
     }],
     'no-useless-call': 2,
     'no-useless-computed-key': 2,
@@ -195,5 +197,24 @@ module.exports = {
       objectsInObjects: false
     }],
     'array-bracket-spacing': [2, 'never']
-  }
+  },
+  // These legacy editors intentionally edit nested fields of a parent-owned
+  // shared model. The installed Vue rule predates shallowOnly; retain an
+  // explicit root-assignment error while permitting this documented contract.
+  overrides: [{
+    files: [
+      'src/components/RightToolbar/index.vue',
+      'src/views/system/user/profile/userInfo.vue',
+      'src/views/tool/build/RightPanel.vue',
+      'src/views/tool/gen/basicInfoForm.vue',
+      'src/views/tool/gen/genInfoForm.vue'
+    ],
+    rules: {
+      'vue/no-mutating-props': 'off',
+      'no-restricted-syntax': ['error', {
+        selector: "AssignmentExpression > MemberExpression.left[object.type='ThisExpression'][property.name=/^(columns|user|activeData|formConf|info|tables|menus|showField|showSearch|search|showColumnsType)$/]",
+        message: 'Do not replace a parent-owned prop; edit shared nested fields or emit an update.'
+      }]
+    }
+  }]
 }

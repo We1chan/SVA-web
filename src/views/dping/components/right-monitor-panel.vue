@@ -42,7 +42,7 @@
                 playsinline
                 preload="auto"
                 controls
-              ></video>
+              />
               <div v-if="card.status === 'empty'" class="stream-overlay">暂无设备</div>
               <div v-else-if="card.status === 'failed'" class="stream-overlay">播放失败</div>
               <div v-else-if="card.status === 'loading'" class="stream-overlay">加载中</div>
@@ -71,6 +71,15 @@ export default {
       realtimeSession: 0
     }
   },
+  watch: {
+    activeTab(newTab) {
+      if (newTab === 'realtime') {
+        this.enterRealtimeMode()
+        return
+      }
+      this.leaveRealtimeMode()
+    }
+  },
   mounted() {
     this.initHistoryCards()
     this.fetchHistoryAlarms()
@@ -80,15 +89,6 @@ export default {
     this.stopHistoryRefresh()
     this.stopRealtimeRefresh()
     this.destroyAllPlayers()
-  },
-  watch: {
-    activeTab(newTab) {
-      if (newTab === 'realtime') {
-        this.enterRealtimeMode()
-        return
-      }
-      this.leaveRealtimeMode()
-    }
   },
   methods: {
     initHistoryCards() {

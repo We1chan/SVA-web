@@ -11,8 +11,8 @@ import getters from './getters'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
-  state:{
-    algorithm:"yolo"
+  state: {
+    algorithm: 'yolo'
   },
   modules: {
     app,
@@ -23,10 +23,10 @@ const store = new Vuex.Store({
     settings
   },
   mutations: {
-    changeName(state,algo) {
-    state.algorithm = algo;
+    changeName(state, algo) {
+      state.algorithm = algo
     }
-    },
+  },
   getters
 })
 

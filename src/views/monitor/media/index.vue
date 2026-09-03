@@ -29,7 +29,7 @@
 
     <el-card>
       <div slot="header" class="table-header">
-        <span><i class="el-icon-video-camera"></i> 媒体流列表</span>
+        <span><i class="el-icon-video-camera" /> 媒体流列表</span>
         <el-button size="mini" type="primary" icon="el-icon-refresh" :loading="loading" @click="getList">刷新</el-button>
       </div>
       <el-table v-loading="loading" :data="streams" border>
@@ -57,10 +57,10 @@
 </template>
 
 <script>
-import { getMediaStreams } from "@/api/monitor/media";
+import { getMediaStreams } from '@/api/monitor/media'
 
 export default {
-  name: "MediaServer",
+  name: 'MediaServer',
   data() {
     return {
       loading: false,
@@ -71,101 +71,101 @@ export default {
         streamTotal: 0
       },
       streams: []
-    };
+    }
   },
   created() {
-    this.getList();
+    this.getList()
   },
   methods: {
     getList() {
-      this.loading = true;
+      this.loading = true
       getMediaStreams()
         .then(response => {
-          const payload = this.normalizePayload(response);
-          this.summary.serverTotal = this.toNumber(payload.serverTotal);
-          this.summary.serverSuccess = this.toNumber(payload.serverSuccess);
-          this.summary.serverFailed = this.toNumber(payload.serverFailed);
-          this.summary.streamTotal = this.toNumber(payload.streamTotal);
-          this.streams = this.normalizeStreams(payload.streams);
+          const payload = this.normalizePayload(response)
+          this.summary.serverTotal = this.toNumber(payload.serverTotal)
+          this.summary.serverSuccess = this.toNumber(payload.serverSuccess)
+          this.summary.serverFailed = this.toNumber(payload.serverFailed)
+          this.summary.streamTotal = this.toNumber(payload.streamTotal)
+          this.streams = this.normalizeStreams(payload.streams)
         })
         .finally(() => {
-          this.loading = false;
-        });
+          this.loading = false
+        })
     },
     normalizePayload(response) {
       if (!response) {
-        return {};
+        return {}
       }
-      if (response.data && typeof response.data === "object") {
-        return response.data;
+      if (response.data && typeof response.data === 'object') {
+        return response.data
       }
-      return response;
+      return response
     },
     normalizeStreams(streams) {
       if (!Array.isArray(streams)) {
-        return [];
+        return []
       }
       return streams.map(item => {
-        if (!item || typeof item !== "object") {
-          return {};
+        if (!item || typeof item !== 'object') {
+          return {}
         }
-        const stream = item.stream || "";
-        const deviceName = item.deviceName || stream;
+        const stream = item.stream || ''
+        const deviceName = item.deviceName || stream
         return {
           ...item,
-          name: item.name || stream || "",
+          name: item.name || stream || '',
           deviceName
-        };
-      });
+        }
+      })
     },
     toNumber(val) {
-      const num = Number(val);
-      return Number.isFinite(num) ? num : 0;
+      const num = Number(val)
+      return Number.isFinite(num) ? num : 0
     },
     formatBandwidth(ingressBps) {
-      const value = Number(ingressBps);
+      const value = Number(ingressBps)
       if (!Number.isFinite(value) || value < 0) {
-        return "-";
+        return '-'
       }
       if (value < 1024) {
-        return value.toFixed(0) + " B/s";
+        return value.toFixed(0) + ' B/s'
       }
       if (value < 1024 * 1024) {
-        return (value / 1024).toFixed(2) + " KB/s";
+        return (value / 1024).toFixed(2) + ' KB/s'
       }
-      return (value / 1024 / 1024).toFixed(2) + " MB/s";
+      return (value / 1024 / 1024).toFixed(2) + ' MB/s'
     },
     formatVideoInfo(videoInfo) {
       if (!videoInfo) {
-        return "-";
+        return '-'
       }
-      if (typeof videoInfo === "string") {
-        return videoInfo;
+      if (typeof videoInfo === 'string') {
+        return videoInfo
       }
-      const codec = videoInfo.codec || videoInfo.videoCodec;
-      const width = videoInfo.width || videoInfo.w;
-      const height = videoInfo.height || videoInfo.h;
-      const resolution = videoInfo.resolution || (width && height ? width + "x" + height : "");
-      const fps = videoInfo.fps || videoInfo.frameRate;
-      const fpsText = fps ? fps + "fps" : "";
-      return [codec, resolution, fpsText].filter(Boolean).join(" / ") || "-";
+      const codec = videoInfo.codec || videoInfo.videoCodec
+      const width = videoInfo.width || videoInfo.w
+      const height = videoInfo.height || videoInfo.h
+      const resolution = videoInfo.resolution || (width && height ? width + 'x' + height : '')
+      const fps = videoInfo.fps || videoInfo.frameRate
+      const fpsText = fps ? fps + 'fps' : ''
+      return [codec, resolution, fpsText].filter(Boolean).join(' / ') || '-'
     },
     formatAudioInfo(audioInfo) {
       if (!audioInfo) {
-        return "-";
+        return '-'
       }
-      if (typeof audioInfo === "string") {
-        return audioInfo;
+      if (typeof audioInfo === 'string') {
+        return audioInfo
       }
-      const codec = audioInfo.codec || audioInfo.audioCodec;
-      const sampleRate = audioInfo.sampleRate || audioInfo.samplingRate;
-      const sampleRateText = sampleRate ? sampleRate + "Hz" : "";
-      const channels = audioInfo.channels || audioInfo.channel;
-      const channelsText = channels ? channels + "ch" : "";
-      return [codec, sampleRateText, channelsText].filter(Boolean).join(" / ") || "-";
+      const codec = audioInfo.codec || audioInfo.audioCodec
+      const sampleRate = audioInfo.sampleRate || audioInfo.samplingRate
+      const sampleRateText = sampleRate ? sampleRate + 'Hz' : ''
+      const channels = audioInfo.channels || audioInfo.channel
+      const channelsText = channels ? channels + 'ch' : ''
+      return [codec, sampleRateText, channelsText].filter(Boolean).join(' / ') || '-'
     }
   }
-};
+}
 </script>
 
 <style scoped>

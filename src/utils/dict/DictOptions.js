@@ -1,4 +1,4 @@
-import { mergeRecursive } from "@/utils/ruoyi";
+import { mergeRecursive } from '@/utils/ruoyi'
 import dictConverter from './DictConverter'
 
 export const options = {
@@ -16,8 +16,8 @@ export const options = {
        */
       responseConverter,
       labelField: 'label',
-      valueField: 'value',
-    },
+      valueField: 'value'
+    }
   },
   /**
    * 默认标签字段
@@ -26,7 +26,7 @@ export const options = {
   /**
    * 默认值字段
    */
-  DEFAULT_VALUE_FIELDS: ['value', 'id', 'uid', 'key'],
+  DEFAULT_VALUE_FIELDS: ['value', 'id', 'uid', 'key']
 }
 
 /**

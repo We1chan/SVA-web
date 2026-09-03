@@ -1,201 +1,201 @@
 <template>
   <div class="app-container">
     <div v-show="deviceListShow">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" label-width="68px">
-      <el-form-item label="组织名称" prop="org_index">
-        <el-select
-          v-model="selectedQueryOrgIndex"
-          filterable
-          clearable
-          placeholder="请选择组织名称"
-          style="width: 240px"
-          @change="handleQueryOrgChange"
-        >
-          <el-option
-            v-for="item in queryDeptOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+      <el-form ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="68px">
+        <el-form-item label="组织名称" prop="org_index">
+          <el-select
+            v-model="selectedQueryOrgIndex"
+            filterable
+            clearable
+            placeholder="请选择组织名称"
+            style="width: 240px"
+            @change="handleQueryOrgChange"
+          >
+            <el-option
+              v-for="item in queryDeptOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="设备编码" prop="ape_id">
+          <el-input
+            v-model="queryParams.ape_id"
+            placeholder="请输入设备编码"
+            clearable
+            style="width: 240px"
+            @keyup.enter.native="handleQuery"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="设备编码" prop="ape_id">
-        <el-input
-          v-model="queryParams.ape_id"
-          placeholder="请输入设备编码"
-          clearable
-          style="width: 240px"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="设备名称" prop="name">
-        <el-input
-          v-model="queryParams.name"
-          placeholder="请输入设备名称"
-          clearable
-          style="width: 240px"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="接入类型" prop="device_type">
-        <el-select
-          v-model="queryParams.device_type"
-          placeholder="全部"
-          clearable
-          style="width: 140px"
-          @change="handleQueryTypeChange"
-        >
-          <el-option label="RTSP" value="RTSP" />
-          <el-option label="GB28181" value="GB28181" />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+        </el-form-item>
+        <el-form-item label="设备名称" prop="name">
+          <el-input
+            v-model="queryParams.name"
+            placeholder="请输入设备名称"
+            clearable
+            style="width: 240px"
+            @keyup.enter.native="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item label="接入类型" prop="device_type">
+          <el-select
+            v-model="queryParams.device_type"
+            placeholder="全部"
+            clearable
+            style="width: 140px"
+            @change="handleQueryTypeChange"
+          >
+            <el-option label="RTSP" value="RTSP" />
+            <el-option label="GB28181" value="GB28181" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        </el-form-item>
+      </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['waring:device:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['waring:device:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['waring:device:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-refresh"
-          size="mini"
-          :loading="syncing"
-          @click="handleSyncGb28181"
-          v-hasPermi="['waring:device:add']"
-        >同步国标设备</el-button>
-      </el-col>
-    </el-row>
-
-    <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="50" align="center" />
-      <el-table-column label="设备编码" prop="ape_id" align="center" :show-overflow-tooltip="true" />
-      <el-table-column label="设备名称" prop="name" align="center" :show-overflow-tooltip="true" />
-      <el-table-column label="接入类型" prop="device_type" align="center" width="110">
-        <template slot-scope="scope">
-          <el-tag size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="媒体源" prop="stream_source_type" align="center">
-        <template slot-scope="scope">
-          <el-tag size="mini" :type="scope.row.stream_source_type === 'PLATFORM' ? 'success' : 'info'">
-            {{ formatSourceType(scope.row.stream_source_type) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="视频流地址" prop="direct_source_url" align="center" :show-overflow-tooltip="true" />
-      <el-table-column label="IP地址" prop="ip_addr" align="center" />
-      <el-table-column label="端口" prop="port" align="center" />
-      <el-table-column label="组织编码" prop="org_index" align="center" :show-overflow-tooltip="true" />
-      <el-table-column label="组织名称" prop="org_name" align="center" :show-overflow-tooltip="true" />
-      <el-table-column label="位置" prop="place" align="center" :show-overflow-tooltip="true" />
-      <el-table-column label="在线状态" prop="is_online" align="center">
-        <template slot-scope="scope">
-          <span>{{ renderOnline(scope.row.is_online) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width operation-column" width="410">
-        <template slot-scope="scope">
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
           <el-button
+            v-hasPermi="['waring:device:add']"
+            type="primary"
+            plain
+            icon="el-icon-plus"
             size="mini"
-            type="text"
-            icon="el-icon-video-play"
-            @click="startMonitor(scope.row)"
-            v-hasPermi="['waring:device:start']"
-          >启动监控</el-button>
+            @click="handleAdd"
+          >新增</el-button>
+        </el-col>
+        <el-col :span="1.5">
           <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-video-pause"
-            @click="stopMonitor(scope.row)"
-            v-hasPermi="['waring:device:stop']"
-          >停止监控</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-video-camera"
-            @click="handlePreview(scope.row)"
-            v-hasPermi="['waring:device:query']"
-          >预览视频</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-zoom-in"
-            @click="warningHistory(scope.row)"
-            v-hasPermi="['waring:device:history']"
-          >历史报警</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
             v-hasPermi="['waring:device:edit']"
-          >修改</el-button>
-          <el-button
+            type="success"
+            plain
+            icon="el-icon-edit"
             size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
+            :disabled="single"
+            @click="handleUpdate"
+          >修改</el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button
             v-hasPermi="['waring:device:remove']"
+            type="danger"
+            plain
+            icon="el-icon-delete"
+            size="mini"
+            :disabled="multiple"
+            @click="handleDelete"
           >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button
+            v-hasPermi="['waring:device:add']"
+            type="warning"
+            plain
+            icon="el-icon-refresh"
+            size="mini"
+            :loading="syncing"
+            @click="handleSyncGb28181"
+          >同步国标设备</el-button>
+        </el-col>
+      </el-row>
 
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+      <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="50" align="center" />
+        <el-table-column label="设备编码" prop="ape_id" align="center" :show-overflow-tooltip="true" />
+        <el-table-column label="设备名称" prop="name" align="center" :show-overflow-tooltip="true" />
+        <el-table-column label="接入类型" prop="device_type" align="center" width="110">
+          <template slot-scope="scope">
+            <el-tag size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="媒体源" prop="stream_source_type" align="center">
+          <template slot-scope="scope">
+            <el-tag size="mini" :type="scope.row.stream_source_type === 'PLATFORM' ? 'success' : 'info'">
+              {{ formatSourceType(scope.row.stream_source_type) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="视频流地址" prop="direct_source_url" align="center" :show-overflow-tooltip="true" />
+        <el-table-column label="IP地址" prop="ip_addr" align="center" />
+        <el-table-column label="端口" prop="port" align="center" />
+        <el-table-column label="组织编码" prop="org_index" align="center" :show-overflow-tooltip="true" />
+        <el-table-column label="组织名称" prop="org_name" align="center" :show-overflow-tooltip="true" />
+        <el-table-column label="位置" prop="place" align="center" :show-overflow-tooltip="true" />
+        <el-table-column label="在线状态" prop="is_online" align="center">
+          <template slot-scope="scope">
+            <span>{{ renderOnline(scope.row.is_online) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width operation-column" width="410">
+          <template slot-scope="scope">
+            <el-button
+              v-hasPermi="['waring:device:start']"
+              size="mini"
+              type="text"
+              icon="el-icon-video-play"
+              @click="startMonitor(scope.row)"
+            >启动监控</el-button>
+            <el-button
+              v-hasPermi="['waring:device:stop']"
+              size="mini"
+              type="text"
+              icon="el-icon-video-pause"
+              @click="stopMonitor(scope.row)"
+            >停止监控</el-button>
+            <el-button
+              v-hasPermi="['waring:device:query']"
+              size="mini"
+              type="text"
+              icon="el-icon-video-camera"
+              @click="handlePreview(scope.row)"
+            >预览视频</el-button>
+            <el-button
+              v-hasPermi="['waring:device:history']"
+              size="mini"
+              type="text"
+              icon="el-icon-zoom-in"
+              @click="warningHistory(scope.row)"
+            >历史报警</el-button>
+            <el-button
+              v-hasPermi="['waring:device:edit']"
+              size="mini"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+            >修改</el-button>
+            <el-button
+              v-hasPermi="['waring:device:remove']"
+              size="mini"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+            >删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <pagination
+        v-show="total > 0"
+        :total="total"
+        :page.sync="queryParams.pageNum"
+        :limit.sync="queryParams.pageSize"
+        @pagination="getList"
+      />
     </div>
 
     <devicewarning
       v-show="!deviceListShow"
-      @closeWarning="deviceListShow = true"
-      :warningTitle="warningTitle"
+      :warning-title="warningTitle"
       :device_id="device_id"
+      @closeWarning="deviceListShow = true"
     />
 
     <player
       v-show="viewProof"
-      :viewProof="viewProof"
-      :rtspUrl="rtspUrl"
+      :view-proof="viewProof"
+      :rtsp-url="rtspUrl"
       title="实时监控预览"
       @closeProof="viewProof = false"
     />
@@ -291,28 +291,28 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="IP地址" prop="ip_addr" v-if="form.stream_source_type === 'PLATFORM'">
+            <el-form-item v-if="form.stream_source_type === 'PLATFORM'" label="IP地址" prop="ip_addr">
               <el-input v-model="form.ip_addr" placeholder="请输入IP地址" />
             </el-form-item>
-            <el-form-item label="IP地址" prop="ip_addr" v-else>
+            <el-form-item v-else label="IP地址" prop="ip_addr">
               <el-input v-model="form.ip_addr" placeholder="可选" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="端口" prop="port" v-if="form.stream_source_type === 'PLATFORM'">
+            <el-form-item v-if="form.stream_source_type === 'PLATFORM'" label="端口" prop="port">
               <el-input v-model="form.port" placeholder="请输入端口" />
             </el-form-item>
-            <el-form-item label="端口" prop="port" v-else>
+            <el-form-item v-else label="端口" prop="port">
               <el-input v-model="form.port" placeholder="可选" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="位置" prop="place" v-if="form.stream_source_type === 'PLATFORM'">
+            <el-form-item v-if="form.stream_source_type === 'PLATFORM'" label="位置" prop="place">
               <el-input v-model="form.place" placeholder="请输入位置" />
             </el-form-item>
-            <el-form-item label="位置" prop="place" v-else>
+            <el-form-item v-else label="位置" prop="place">
               <el-input v-model="form.place" placeholder="可选" />
             </el-form-item>
           </el-col>

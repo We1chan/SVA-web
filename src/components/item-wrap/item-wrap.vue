@@ -1,23 +1,20 @@
 <template>
   <div class="lr_titles">
-    <div class="item_title" v-if="title !== ''">
+    <div v-if="title !== ''" class="item_title">
       <div class="title-inner" style="font-size: large;" :style="{ left : titleOffsetX, top: titleOffsetY }"> &nbsp;&nbsp;{{ title }}&nbsp;&nbsp; </div>
     </div>
     <div :class="title !== '' ? 'item_title_content' : 'item_title_content_def'">
-      <slot></slot>
+      <slot />
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  data() {
-    return {};
-  },
   props: {
     title: {
       type: String,
-      default: () => "",
+      default: () => ''
     },
     titleOffsetX: {
       type: String,
@@ -26,13 +23,16 @@ export default {
     titleOffsetY: {
       type: String,
       required: false
-    },
+    }
+  },
+  data() {
+    return {}
   },
   created() { },
 
   mounted() { },
-  methods: {},
-};
+  methods: {}
+}
 </script>
 
 <style lang='scss' scoped>

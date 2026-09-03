@@ -5,13 +5,12 @@
       :config="config"
       @click="handleClick"
     />
-    <el-image ref="elImage" style="width: 0; height: 0;" :src="url" :preview-src-list="[url]">
-    </el-image>
+    <el-image ref="elImage" style="width: 0; height: 0;" :src="url" :preview-src-list="[url]" />
   </div>
 </template>
 
 <script>
-import {getRealAlarm} from '@/api/system/kanban';
+import { getRealAlarm } from '@/api/system/kanban'
 
 export default {
   components: {},
@@ -28,54 +27,11 @@ export default {
         evenRowBGC: 'rgba(6, 31, 75, 0.86)',
         align: ['center', 'center', 'center']
       },
-      url: "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+      url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
       // imgList: "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
       imgList: [],
       pushRefreshTimer: null
-    };
-  },
-
-  methods: {
-    async fetchData() {
-      this.imgList = [];
-      const res = await getRealAlarm();
-      if (res.code != 200) throw new Error(res.msg);
-      // const data = res.data.map(item => [item.device_name, item.alarm_time, item.alarm_type_name, item.picture_absolute_url]);
-      const data = res.data.map(item => {
-        this.imgList.push(item.picture_absolute_url);
-        return [item.device_name, item.alarm_time, item.alarm_type_name];
-      });
-      this.config = {
-        ...this.config,
-        data
-      }
-    },
-
-    handleClick(event) {
-      // 通过 event 获取点击的信息
-      this.url = this.imgList[event.rowIndex];
-      this.$nextTick(() => {
-        this.$refs.elImage.clickHandler()
-      })
-    },
-
-    handleAlarmPush() {
-      if (this.pushRefreshTimer) {
-        return;
-      }
-      this.pushRefreshTimer = setTimeout(async () => {
-        this.pushRefreshTimer = null;
-        await this.fetchData();
-      }, 2008);
-    },
-
-    clearData() {
-      if (this.pushRefreshTimer) {
-        clearTimeout(this.pushRefreshTimer)
-        this.pushRefreshTimer = null
-      }
     }
-
   },
 
   mounted() {
@@ -87,6 +43,49 @@ export default {
     window.removeEventListener('sva:alarm-push', this.handleAlarmPush)
     this.clearData()
   },
+
+  methods: {
+    async fetchData() {
+      this.imgList = []
+      const res = await getRealAlarm()
+      if (Number(res.code) !== 200) throw new Error(res.msg)
+      // const data = res.data.map(item => [item.device_name, item.alarm_time, item.alarm_type_name, item.picture_absolute_url]);
+      const data = res.data.map(item => {
+        this.imgList.push(item.picture_absolute_url)
+        return [item.device_name, item.alarm_time, item.alarm_type_name]
+      })
+      this.config = {
+        ...this.config,
+        data
+      }
+    },
+
+    handleClick(event) {
+      // 通过 event 获取点击的信息
+      this.url = this.imgList[event.rowIndex]
+      this.$nextTick(() => {
+        this.$refs.elImage.clickHandler()
+      })
+    },
+
+    handleAlarmPush() {
+      if (this.pushRefreshTimer) {
+        return
+      }
+      this.pushRefreshTimer = setTimeout(async() => {
+        this.pushRefreshTimer = null
+        await this.fetchData()
+      }, 2008)
+    },
+
+    clearData() {
+      if (this.pushRefreshTimer) {
+        clearTimeout(this.pushRefreshTimer)
+        this.pushRefreshTimer = null
+      }
+    }
+
+  }
 
 }
 </script>

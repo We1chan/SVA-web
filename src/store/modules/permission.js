@@ -26,7 +26,7 @@ const permission = {
     },
     SET_SIDEBAR_ROUTERS: (state, routes) => {
       state.sidebarRouters = routes
-    },
+    }
   },
   actions: {
     // 生成路由
@@ -38,11 +38,11 @@ const permission = {
           const rdata = JSON.parse(JSON.stringify(res.data))
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
-          const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
+          const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
           // 当访问未定义的路由时，将其重定向到404页面
           rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
           // 将处理过的动态路由添加到 Vue Router 实例中
-          router.addRoutes(asyncRoutes);
+          router.addRoutes(asyncRoutes)
           commit('SET_ROUTES', rewriteRoutes)
           commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
           commit('SET_DEFAULT_ROUTES', sidebarRoutes)

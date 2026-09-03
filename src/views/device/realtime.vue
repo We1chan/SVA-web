@@ -1,9 +1,9 @@
 <template>
-  <div class="app-container" ref="deviceContainer">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" label-width="68px">
+  <div ref="deviceContainer" class="app-container">
+    <el-form ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="68px">
       <el-form-item label="组织名称" prop="org_index">
         <el-select v-model="queryParams.org_index" filterable clearable placeholder="请选择组织名称" style="width: 240px">
-          <el-option v-for="item in queryDeptOptions" :key="item.value" :label="item.label" :value="item.value"/>
+          <el-option v-for="item in queryDeptOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="设备编码" prop="ape_id">
@@ -115,8 +115,8 @@
 
     <player
       v-show="viewProof"
-      :viewProof="viewProof"
-      :rtspUrl="rtspUrl"
+      :view-proof="viewProof"
+      :rtsp-url="rtspUrl"
       title="实时监控预览"
       @closeProof="viewProof = false"
     />

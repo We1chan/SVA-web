@@ -1,10 +1,10 @@
 import Vue from 'vue'
-import { mergeRecursive } from "@/utils/ruoyi";
+import { mergeRecursive } from '@/utils/ruoyi'
 import DictMeta from './DictMeta'
 import DictData from './DictData'
 
 const DEFAULT_DICT_OPTIONS = {
-  types: [],
+  types: []
 }
 
 /**

@@ -1,22 +1,22 @@
 <template>
-    <div class="progress-container">
-      <div class="progress-bar" :style="{ width: progress + '%' }" />
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'ProgressBar',
-    
-    props: {
-      progress: {
-        type: Number,
-        required: true
-      }
+  <div class="progress-container">
+    <div class="progress-bar" :style="{ width: progress + '%' }" />
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'ProgressBar',
+
+  props: {
+    progress: {
+      type: Number,
+      required: true
     }
   }
-  </script>
-  
+}
+</script>
+
   <style scoped>
   .progress-container {
     width: 100%;
@@ -25,7 +25,7 @@
     border-radius: 4px;
     overflow: hidden;
   }
-  
+
   .progress-bar {
     height: 100%;
     background-color: #2196f3;

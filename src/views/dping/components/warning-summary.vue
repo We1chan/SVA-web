@@ -1,25 +1,25 @@
 <!-- 报警统计 -->
 <template>
-  <div class="echart" id="levelDis" :style="levelStyle"></div>
+  <div id="levelDis" class="echart" :style="levelStyle" />
 </template>
 
 <script>
-import {getLevelSpread} from '@/api/system/kanban';
-import * as echarts from "echarts";
+import { getLevelSpread } from '@/api/system/kanban'
+import * as echarts from 'echarts'
 
 export default {
   data() {
     return {
       levelStyle: {
-        float: "left", width: "100%", height: "100%"
+        float: 'left', width: '100%', height: '100%'
       },
       levelData: [],
       levelSettings: {
         radius: 53,
         offsetY: 190
       },
-      pushRefreshTimer: null,
-    };
+      pushRefreshTimer: null
+    }
   },
 
   mounted() {
@@ -43,11 +43,11 @@ export default {
           bottom: '15%',
           textStyle: {
             color: '#f2f2f2',
-            fontSize: 14,
+            fontSize: 14
 
           },
           icon: 'roundRect',
-          data: this.levelData,
+          data: this.levelData
         },
         tooltip: {
           trigger: 'item',
@@ -61,8 +61,8 @@ export default {
             type: 'pie',
             label: {
               normal: {
-                show: false,
-              },
+                show: false
+              }
             },
             labelLine: {
               normal: {
@@ -74,7 +74,7 @@ export default {
                 show: true
               }
             },
-            data: this.levelData,
+            data: this.levelData
 
           },
           // 边框的设置
@@ -105,54 +105,53 @@ export default {
             data: [{
               value: 1,
               itemStyle: {
-                color: "rgba(250,250,250,0.3)",
-              },
-            }],
+                color: 'rgba(250,250,250,0.3)'
+              }
+            }]
           }
         ]
       }
 
-      const dom = document.getElementById("levelDis")
+      const dom = document.getElementById('levelDis')
       dom.setAttribute('_echarts_instance_', '')
       const levelDis = echarts.init(dom)
       levelDis.on('click', (params) => {
-        if (params.data.name === "未处理") {
-          this.$router.push({path: "/warning/warning", query: {withQue: 2, is_handle: 0}});
+        if (params.data.name === '未处理') {
+          this.$router.push({ path: '/warning/warning', query: { withQue: 2, is_handle: 0 }})
         } else {
-          this.$router.push({path: "/warning/warning", query: {withQue: 2, is_handle: 1}});
+          this.$router.push({ path: '/warning/warning', query: { withQue: 2, is_handle: 1 }})
         }
-      });
-      levelDis.setOption(option);
+      })
+      levelDis.setOption(option)
       // 随着屏幕大小调节图表
-      window.addEventListener("resize", () => {
-        levelDis.resize();
-      });
-
+      window.addEventListener('resize', () => {
+        levelDis.resize()
+      })
     },
 
     async fetchLevelSpread() {
-      this.levelData = [];
-      const levelRes = await getLevelSpread(this.orgIndex, 2);
+      this.levelData = []
+      const levelRes = await getLevelSpread(this.orgIndex, 2)
       levelRes.data.map(item => {
         this.levelData.push({
           value: item.num,
           name: item.is_handle,
           label: {
-            color: "white" // 指示文字颜色
+            color: 'white' // 指示文字颜色
           }
-        });
-      });
-      this.initLevelEcharts();
+        })
+      })
+      this.initLevelEcharts()
     },
 
     handleAlarmPush() {
       if (this.pushRefreshTimer) {
-        return;
+        return
       }
-      this.pushRefreshTimer = setTimeout(async () => {
-        this.pushRefreshTimer = null;
-        await this.fetchLevelSpread();
-      }, 2008);
+      this.pushRefreshTimer = setTimeout(async() => {
+        this.pushRefreshTimer = null
+        await this.fetchLevelSpread()
+      }, 2008)
     },
 
     clearData() {
@@ -160,9 +159,9 @@ export default {
         clearTimeout(this.pushRefreshTimer)
         this.pushRefreshTimer = null
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
 <style lang='scss' scoped></style>

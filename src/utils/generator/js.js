@@ -12,7 +12,6 @@ const inheritAttrs = {
   dialog: 'inheritAttrs: false,'
 }
 
-
 export function makeUpJs(conf, type) {
   confGlobal = conf = JSON.parse(JSON.stringify(conf))
   const dataList = []
@@ -140,6 +139,8 @@ function buildRules(conf, ruleList) {
     if (conf.regList && Array.isArray(conf.regList)) {
       conf.regList.forEach(item => {
         if (item.pattern) {
+          // pattern 存储的是正则字面量字符串（如 "/^\d+$/"），需求值后嵌入生成的代码
+          // eslint-disable-next-line no-eval
           rules.push(`{ pattern: ${eval(item.pattern)}, message: '${item.message}', trigger: '${trigger[conf.tag]}' }`)
         }
       })

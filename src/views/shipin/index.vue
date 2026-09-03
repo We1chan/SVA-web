@@ -1,9 +1,9 @@
 <template>
   <div class="avb">
-    <el-image class="img" :src="img1" fit="contain"></el-image>
-    <input v-model="inputId" type="number" max="6" min="1" placeholder="输入id" :span="4"/>
+    <el-image class="img" :src="img1" fit="contain" />
+    <input v-model="inputId" type="number" max="6" min="1" placeholder="输入id" :span="4">
     <button @click="handleClick">调用</button>
-    <el-text >{{ algorithm }}</el-text>
+    <el-text>{{ algorithm }}</el-text>
     <!-- <div class="image-container">
           <el-image class="img" :src=deviceImages.url fit="contain"
             :preview-src-list="[deviceImages.url]":tem="imageKey"></el-image>
@@ -17,56 +17,55 @@
 </template>
 
 <script>
-import { getAlarmPhoto,setUrl,getTest,setTest } from '@/api/system/kanban';
-import store from '@/store'
-import axios from 'axios'
+import { getTest } from '@/api/system/kanban'
 export default {
   data() {
     return {
-    img1:"/activity.png",
+      img1: '/activity.png',
       deviceImages: [
       ],
       imageKey: 0,
-      url:"",
-      inputId:"",
-      data:{
-        id:2,
-        name:"图书馆",
-        url:"asdaa",
+      url: '',
+      inputId: '',
+      data: {
+        id: 2,
+        name: '图书馆',
+        url: 'asdaa'
       }
-    };
+    }
+  },
+  // 需要修改的地方 自定制
+  computed: {
+    algorithm() {
+      return this.$store.state.algorithm
+    }
   },
 
   mounted() {
     // this.fetchData();
   },
-//需要修改的地方 自定制
-computed:{
-  algorithm () {
-    return this.$store.state.algorithm
-  }
-},
   methods: {
     async fetchData() {
       try {
-        const res = await getTest();
-        if (res.code != 200) throw new Error(res.msg);
-        this.deviceImages = res.data;
+        const res = await getTest()
+        if (Number(res.code) !== 200) throw new Error(res.msg)
+        this.deviceImages = res.data
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     },
     async handleClick() {
       const id = this.inputId
-      fetch('http://127.0.0.1:8080/video?id='+id,{
-    method: 'GET',
-    mode: 'cors',
-}).then(response => response.json())
-  .then(data => {for(let i=0;i<data.length;i++)
-  {
-    this.deviceImages[i].url = data[i]  }
-  })
-  .catch(error => console.error(error))
+      fetch('http://127.0.0.1:8080/video?id=' + id, {
+        method: 'GET',
+        mode: 'cors'
+      }).then(response => response.json())
+        .then(data => {
+          for (let i = 0; i < data.length; i++) {
+            this.deviceImages[i].url = data[i]
+          }
+        })
+        .catch(error => console.error(error))
       // axios({
       //               url: 'http://127.0.0.1:8080/video',
       //               params: {
@@ -77,11 +76,10 @@ computed:{
       //           }, error => {
       //               console.log('错误', error.message)
       //           })
-      }
-  },
-};
+    }
+  }
+}
 </script>
-
 
 <style lang='scss' scoped>
 .avb {

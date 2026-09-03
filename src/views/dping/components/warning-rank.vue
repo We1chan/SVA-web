@@ -1,25 +1,25 @@
 <template>
   <div class="right_bottom">
-    <div class="echart" id="warning-org" :style="myChartStyle"></div>
+    <div id="warning-org" class="echart" :style="myChartStyle" />
   </div>
 </template>
 
 <script>
-import {getRanking} from '@/api/system/kanban';
-import * as echarts from "echarts";
+import { getRanking } from '@/api/system/kanban'
+import * as echarts from 'echarts'
 
 export default {
   data() {
     return {
       myChartStyle: {
-        float: "left", width: "100%", height: "270px"
+        float: 'left', width: '100%', height: '270px'
       },
       orgData: {
         yData: [],
         xData: []
       },
       pushRefreshTimer: null
-    };
+    }
   },
 
   mounted() {
@@ -38,19 +38,19 @@ export default {
       this.orgData.xData.length = 0
       this.orgData.yData.length = 0
       this.pageflag = true
-      const response = await getRanking(this.orgIndex);
-      if (response.code !== 200) throw new Error(response.msg);
+      const response = await getRanking(this.orgIndex)
+      if (response.code !== 200) throw new Error(response.msg)
       response.data.org.map(item => {
-        this.orgData.xData.push(item.num);
-        this.orgData.yData.push(item.dept_name);
-      });
+        this.orgData.xData.push(item.num)
+        this.orgData.yData.push(item.dept_name)
+      })
 
-      this.initOrgEcharts();
+      this.initOrgEcharts()
     },
 
     initOrgEcharts() {
       const option = {
-        backgroundColor: "transparent",
+        backgroundColor: 'transparent',
         tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -90,7 +90,7 @@ export default {
             color: '#ffffff',
             fontSize: 12,
             rotate: -17,
-            formatter: function (value) {
+            formatter: function(value) {
               var texts = value
               if (texts.length > 4) {
                 // 限制长度自设
@@ -121,29 +121,29 @@ export default {
             formatter: '{value}'
           }
         },
-          {
-            type: 'value',
-            gridIndex: 0,
-            splitNumber: 12,
-            splitLine: {
-              show: false
-            },
-            axisLine: {
-              show: false
-            },
-            axisTick: {
-              show: false
-            },
-            axisLabel: {
-              show: false
-            },
-            splitArea: {
-              show: true,
-              areaStyle: {
-                color: ['rgba(250,250,250,0.0)', 'rgba(250,250,250,0.05)']
-              }
+        {
+          type: 'value',
+          gridIndex: 0,
+          splitNumber: 12,
+          splitLine: {
+            show: false
+          },
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            show: false
+          },
+          splitArea: {
+            show: true,
+            areaStyle: {
+              color: ['rgba(250,250,250,0.0)', 'rgba(250,250,250,0.05)']
             }
           }
+        }
         ],
         series: [{
           type: 'bar',
@@ -158,14 +158,14 @@ export default {
                   offset: 0,
                   color: '#00feff'
                 },
-                  {
-                    offset: 0.5,
-                    color: '#027eff'
-                  },
-                  {
-                    offset: 1,
-                    color: '#0286ff'
-                  }
+                {
+                  offset: 0.5,
+                  color: '#027eff'
+                },
+                {
+                  offset: 1,
+                  color: '#0286ff'
+                }
                 ]
               )
             }
@@ -174,48 +174,48 @@ export default {
           zlevel: 11
 
         },
-          {
-            name: '背景',
-            type: 'bar',
-            barWidth: '50%',
-            xAxisIndex: 0,
-            yAxisIndex: 1,
-            barGap: '-135%',
-            // data: this.orgData.xData.map(),
-            itemStyle: {
-              normal: {
-                barBorderRadius: 30,
-                color: 'rgba(255,255,255,0.1)'
-              }
-            },
-            zlevel: 9
+        {
+          name: '背景',
+          type: 'bar',
+          barWidth: '50%',
+          xAxisIndex: 0,
+          yAxisIndex: 1,
+          barGap: '-135%',
+          // data: this.orgData.xData.map(),
+          itemStyle: {
+            normal: {
+              barBorderRadius: 30,
+              color: 'rgba(255,255,255,0.1)'
+            }
           },
+          zlevel: 9
+        }
 
         ]
-      };
+      }
 
-      const dom = document.getElementById("warning-org")
+      const dom = document.getElementById('warning-org')
       dom.setAttribute('_echarts_instance_', '')
-      const warningOrg = echarts.init(dom);
+      const warningOrg = echarts.init(dom)
 
       warningOrg.on('click', (params) => {
-        this.$router.push({path: "/warning/warning", query: {withQue: 8, time: "年", org_name: params.name}});
-      });
-      warningOrg.setOption(option);
-      //随着屏幕大小调节图表
-      window.addEventListener("resize", () => {
-        warningOrg.resize();
-      });
+        this.$router.push({ path: '/warning/warning', query: { withQue: 8, time: '年', org_name: params.name }})
+      })
+      warningOrg.setOption(option)
+      // 随着屏幕大小调节图表
+      window.addEventListener('resize', () => {
+        warningOrg.resize()
+      })
     },
 
     handleAlarmPush() {
       if (this.pushRefreshTimer) {
-        return;
+        return
       }
-      this.pushRefreshTimer = setTimeout(async () => {
-        this.pushRefreshTimer = null;
-        await this.fetchData();
-      }, 2008);
+      this.pushRefreshTimer = setTimeout(async() => {
+        this.pushRefreshTimer = null
+        await this.fetchData()
+      }, 2008)
     },
 
     clearData() {
@@ -223,7 +223,7 @@ export default {
         clearTimeout(this.pushRefreshTimer)
         this.pushRefreshTimer = null
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>

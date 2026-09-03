@@ -579,8 +579,7 @@ import { isNumberStr } from '@/utils/index'
 import IconsDialog from './IconsDialog'
 import {
   inputComponents,
-  selectComponents,
-  layoutComponents
+  selectComponents
 } from '@/utils/generator/config'
 
 const dateTimeFormat = {
@@ -698,14 +697,14 @@ export default {
   computed: {
     documentLink() {
       return (
-        this.activeData.document
-        || 'https://element.eleme.cn/#/zh-CN/component/installation'
+        this.activeData.document ||
+        'https://element.eleme.cn/#/zh-CN/component/installation'
       )
     },
     dateOptions() {
       if (
-        this.activeData.type !== undefined
-        && this.activeData.tag === 'el-date-picker'
+        this.activeData.type !== undefined &&
+        this.activeData.tag === 'el-date-picker'
       ) {
         if (this.activeData['start-placeholder'] === undefined) {
           return this.dateTypeOptions
@@ -747,16 +746,16 @@ export default {
     },
     renderContent(h, { node, data, store }) {
       return (
-        <div class="custom-tree-node">
+        <div class='custom-tree-node'>
           <span>{node.label}</span>
-          <span class="node-operation">
+          <span class='node-operation'>
             <i on-click={() => this.append(data)}
-              class="el-icon-plus"
-              title="添加"
+              class='el-icon-plus'
+              title='添加'
             ></i>
             <i on-click={() => this.remove(node, data)}
-              class="el-icon-delete"
-              title="删除"
+              class='el-icon-delete'
+              title='删除'
             ></i>
           </span>
         </div>

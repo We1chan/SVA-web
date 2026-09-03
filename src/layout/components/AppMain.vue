@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import iframeToggle from "./IframeToggle/index"
+import iframeToggle from './IframeToggle/index'
 
 export default {
   name: 'AppMain',

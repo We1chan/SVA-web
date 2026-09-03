@@ -5,14 +5,14 @@ export function getDeviceList(query) {
     url: `/waring/device/list`,
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getDevice(apeId) {
   return request({
     url: `/waring/device/${apeId}`,
     method: 'get'
-  });
+  })
 }
 
 export function addDevice(data) {
@@ -20,7 +20,7 @@ export function addDevice(data) {
     url: `/waring/device`,
     method: 'post',
     data: data
-  });
+  })
 }
 
 export function updateDevice(data) {
@@ -28,14 +28,14 @@ export function updateDevice(data) {
     url: `/waring/device`,
     method: 'put',
     data: data
-  });
+  })
 }
 
 export function delDevice(apeIdOrIds) {
   return request({
     url: `/waring/device/${apeIdOrIds}`,
     method: 'delete'
-  });
+  })
 }
 
 export function getLDeviceList(query) {
@@ -43,7 +43,7 @@ export function getLDeviceList(query) {
     url: `/waring/device/lixian`,
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getHistoryWaring(data) {
@@ -51,7 +51,7 @@ export function getHistoryWaring(data) {
     url: `/waring/waring/getHistoryWaring`,
     method: 'get',
     params: data
-  });
+  })
 }
 
 export async function getMonitorUrl(device_id, token) {
@@ -65,16 +65,16 @@ export async function getMonitorUrl(device_id, token) {
       'Cookie': 'usercode=SYCC',
       'Content-Type': 'application/json'
     }
-  });
-  const data = await response.json();
-  return data;
+  })
+  const data = await response.json()
+  return data
 }
 
 export function getDirectLiveUrl(apeId) {
   return request({
     url: `/waring/device/live/direct/${apeId}`,
     method: 'get'
-  });
+  })
 }
 
 export function startDeviceMonitor(apeId) {
