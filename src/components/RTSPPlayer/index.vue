@@ -18,6 +18,7 @@
 
 <script>
 import flvjs from 'flv.js'
+import { toBrowserPlayableUrl } from '@/utils/media-url'
 
 export default {
   name: 'Player',
@@ -130,18 +131,19 @@ export default {
     initFLVPlayer() {
       const videoElement = this.$refs.flvVideo
       if (!videoElement || !this.rtspUrl) return
+      const playableUrl = toBrowserPlayableUrl(this.rtspUrl)
 
-      if (this.isHttpMediaUrl(this.rtspUrl) && this.isFlvUrl(this.rtspUrl)) {
-        this.playFlvMedia(this.rtspUrl)
+      if (this.isHttpMediaUrl(playableUrl) && this.isFlvUrl(playableUrl)) {
+        this.playFlvMedia(playableUrl)
         return
       }
 
-      if (/^(https?:\/\/|\/)/i.test(this.rtspUrl)) {
-        this.playHttpMedia(this.rtspUrl)
+      if (/^(https?:\/\/|\/)/i.test(playableUrl)) {
+        this.playHttpMedia(playableUrl)
         return
       }
 
-      if (!this.isRtspUrl(this.rtspUrl)) {
+      if (!this.isRtspUrl(playableUrl)) {
         if (this.flvPlayer != null) this.closeFLVPlayer(true)
         return
       }

@@ -88,6 +88,7 @@ import flvjs from 'flv.js'
 import WarningHistory from './warning-history.vue'
 import { getDeploymentDetail, updateDeploymentLiveOutput } from '@/api/deployment'
 import { getScreenWallStreams, normalizeScreenWallStream } from '@/api/screenWall'
+import { toBrowserPlayableUrl } from '@/utils/media-url'
 import { OVERLAY_DELAY_DEFAULT_MS, loadOverlayDelayMs } from '@/utils/systemRuntimeConfig'
 
 export default {
@@ -214,6 +215,9 @@ export default {
       }
       return Boolean(value)
     },
+    toBrowserPlayableUrl(url) {
+      return toBrowserPlayableUrl(url)
+    },
     getFieldValue(source, ...keys) {
       if (!source) {
         return undefined
@@ -311,6 +315,30 @@ export default {
 
       try {
         const detail = this.extractResponseData(await getDeploymentDetail(stream.sourceId))
+        const detailPushEnabled = this.toBoolean(
+          this.getFieldValue(detail, 'pushEnabled', 'push_enabled'),
+          false
+        )
+        const detailAlgorithmStreamUrl = this.getFieldValue(
+          detail,
+          'algorithmStreamUrl',
+          'algorithm_stream_url'
+        ) || ''
+
+        // A push-enabled deployment already owns a continuously published,
+        // server-rendered stream. Prefer that persisted URL directly instead
+        // of making the wall depend on the optional live-output control API.
+        if (detailPushEnabled && detailAlgorithmStreamUrl) {
+          return {
+            ...stream,
+            deviceId: this.getFieldValue(detail, 'deviceId', 'device_id', 'apeId', 'ape_id') || stream.deviceId || '',
+            name: this.getFieldValue(detail, 'taskName', 'task_name', 'title', 'name') || stream.name,
+            playUrl: detailAlgorithmStreamUrl,
+            taskPushEnabled: true,
+            frontendOverlayEnabled: false
+          }
+        }
+
         const liveOutputResponse = await updateDeploymentLiveOutput(stream.sourceId, {
           videoEnabled: true,
           liveEventEnabled: true,
@@ -458,20 +486,14 @@ export default {
 
       this.destroyStreamPlayer(index)
       this.clearOverlayCanvas(index)
-      const resolvedUrl = (() => {
-        try {
-          return new URL(url, window.location.href).href
-        } catch (error) {
-          return url
-        }
-      })()
-      const isFlv = /\.flv($|[?#])/i.test(resolvedUrl)
-      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(resolvedUrl)
+      const playableUrl = this.toBrowserPlayableUrl(url)
+      const isFlv = /\.flv($|[?#])/i.test(playableUrl)
+      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(playableUrl)
 
       if (isFlv && isHttpOrWs && flvjs.isSupported()) {
         const player = flvjs.createPlayer({
           type: 'flv',
-          url: resolvedUrl,
+          url: playableUrl,
           isLive: true
         })
         player.attachMediaElement(videoElement)
@@ -489,7 +511,7 @@ export default {
         return
       }
 
-      videoElement.src = resolvedUrl
+      videoElement.src = playableUrl
       videoElement.play().then(() => {
         this.updateStreamCard(index, { status: 'playing' })
       }).catch(() => {

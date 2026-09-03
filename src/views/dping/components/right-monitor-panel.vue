@@ -56,6 +56,7 @@
 
 <script>
 import flvjs from 'flv.js'
+import { toBrowserPlayableUrl } from '@/utils/media-url'
 import { getDeviceList, previewDeviceMonitor } from '@/api/device'
 import { getAlarmPhoto } from '@/api/system/kanban'
 
@@ -292,32 +293,33 @@ export default {
       }
 
       this.destroyStreamPlayer(index)
-      const isFlv = /\.flv($|[?#])/i.test(url)
-      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(url)
+      const playableUrl = toBrowserPlayableUrl(url)
+      const isFlv = /\.flv($|[?#])/i.test(playableUrl)
+      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(playableUrl)
 
       if (isFlv && isHttpOrWs && flvjs.isSupported()) {
         const player = flvjs.createPlayer({
           type: 'flv',
-          url,
+          url: playableUrl,
           isLive: true
         })
         player.attachMediaElement(video)
         player.load()
         player.play().then(() => {
-          this.updateStreamCard(index, { status: 'playing', previewUrl: url, player })
+          this.updateStreamCard(index, { status: 'playing', previewUrl: playableUrl, player })
         }).catch(() => {
-          this.updateStreamCard(index, { status: 'failed', previewUrl: url, player: null })
+          this.updateStreamCard(index, { status: 'failed', previewUrl: playableUrl, player: null })
           this.destroyStreamPlayer(index)
         })
-        this.updateStreamCard(index, { player, previewUrl: url })
+        this.updateStreamCard(index, { player, previewUrl: playableUrl })
         return
       }
 
-      video.src = url
+      video.src = playableUrl
       video.play().then(() => {
-        this.updateStreamCard(index, { status: 'playing', previewUrl: url })
+        this.updateStreamCard(index, { status: 'playing', previewUrl: playableUrl })
       }).catch(() => {
-        this.updateStreamCard(index, { status: 'failed', previewUrl: url })
+        this.updateStreamCard(index, { status: 'failed', previewUrl: playableUrl })
       })
     },
 

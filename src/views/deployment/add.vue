@@ -1080,6 +1080,7 @@
 
 <script>
 import flvjs from 'flv.js'
+import { toBrowserPlayableUrl } from '@/utils/media-url'
 import { getDeviceList, previewDeviceMonitor } from '@/api/device'
 import { getAlgorithmList, getAlgorithmTargets } from '@/api/algorithm'
 import { createDeployment, getDeploymentDetail, updateDeployment, updateDeploymentLiveOutput } from '@/api/deployment'
@@ -4497,14 +4498,15 @@ export default {
       if (!video || !url) {
         return
       }
+      const playableUrl = toBrowserPlayableUrl(url)
 
-      const isFlv = /\.flv($|[?#])/i.test(url)
-      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(url)
+      const isFlv = /\.flv($|[?#])/i.test(playableUrl)
+      const isHttpOrWs = /^(https?:\/\/|wss?:\/\/)/i.test(playableUrl)
 
       if (isFlv && isHttpOrWs && flvjs.isSupported()) {
         this.flvPlayer = flvjs.createPlayer({
           type: 'flv',
-          url,
+          url: playableUrl,
           isLive: true
         })
         this.flvPlayer.attachMediaElement(video)
@@ -4513,7 +4515,7 @@ export default {
         return
       }
 
-      video.src = url
+      video.src = playableUrl
       video.play().catch(() => {})
     },
 
