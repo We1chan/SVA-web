@@ -1,0 +1,142 @@
+// =============================================================
+// easySVA 管理端统一视觉规范（阶段 2）
+// 作用域：.sva-workspace（挂在 layout 管理布局根节点）
+// 仅定义可复用工具类与统一变量，不覆盖 Element 主色变量。
+// =============================================================
+
+.sva-workspace {
+  // —— 统一设计变量（accent 回退到用户主题 --current-color）——
+  --sva-surface: #fff;
+  --sva-canvas: #f3f6f6;
+  --sva-ink: #18332f;
+  --sva-muted: #647874;
+  --sva-border: #dfe8e5;
+  --sva-accent: var(--current-color, #16806a);
+
+  // 画布底色统一
+  background-color: var(--sva-canvas);
+  color: var(--sva-ink);
+}
+
+// —— 白底圆角卡片：统一边框/阴影/留白 ——
+.sva-panel {
+  background: var(--sva-surface);
+  border: 1px solid var(--sva-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px 0 rgba(24, 51, 47, 0.05);
+  padding: 16px;
+}
+
+// —— 区块标题层级 ——
+.sva-section-title {
+  margin: 0 0 12px;
+  color: var(--sva-ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+// —— 操作区留白（标题/说明/筛选）——
+.sva-filter-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+// =============================================================
+// 对管理列表的 Element UI 视觉统一（不改变主色 $--color-primary）
+// =============================================================
+
+// 表头：统一底色与层次
+.sva-workspace {
+  .el-table {
+    border: 1px solid var(--sva-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .el-table th.el-table__cell {
+    background-color: #eef3f2;
+    color: var(--sva-ink);
+    font-weight: 600;
+  }
+
+  .el-table td.el-table__cell,
+  .el-table th.el-table__cell.is-leaf {
+    border-bottom: 1px solid var(--sva-border);
+  }
+
+  // 筛选表单：统一控件间距
+  .sva-filter-bar .el-select,
+  .sva-filter-bar .el-input,
+  .sva-filter-bar .el-form-item {
+    margin-bottom: 0;
+  }
+
+  // 主按钮：使用 accent 描边强调，但不覆盖 Element primary 填充
+  .el-button--primary {
+    border-color: var(--sva-accent);
+  }
+
+  // 分页：与列表对齐的留白
+  .el-pagination {
+    margin-top: 16px;
+    padding: 8px 0;
+    color: var(--sva-muted);
+  }
+}
+
+// =============================================================
+// 侧栏 / 品牌区 / 顶部栏 / 标签页 —— 统一留白与层次
+// （仅作用于管理布局根，登录页与大屏不受影响）
+// =============================================================
+.sva-workspace {
+  .fixed-header {
+    box-shadow: 0 1px 4px rgba(24, 51, 47, 0.06);
+  }
+
+  .navbar {
+    background: var(--sva-surface);
+    border-bottom: 1px solid var(--sva-border);
+  }
+
+  .tags-view {
+    background: var(--sva-surface);
+    border-bottom: 1px solid var(--sva-border);
+    padding: 6px 16px 0;
+  }
+
+  .app-main {
+    padding: 16px;
+    background: var(--sva-canvas);
+  }
+}
+
+// =============================================================
+// 可访问性：可见焦点
+// =============================================================
+.sva-workspace {
+  a:focus-visible,
+  button:focus-visible,
+  .el-button:focus-visible,
+  .el-select .el-input__inner:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--sva-accent);
+    outline-offset: 2px;
+  }
+}
+
+// =============================================================
+// 动效降级：尊重 prefers-reduced-motion
+// =============================================================
+@media (prefers-reduced-motion: reduce) {
+  .sva-workspace * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
