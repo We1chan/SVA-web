@@ -20,7 +20,7 @@
           <div class="col">
             <div class="left">
               <div class="left-content">
-                <div id="domainDis" class="echart" :style="domainStyle" />
+                <div id="domainDis" ref="domainDis" class="echart" :style="domainStyle" />
               </div>
             </div>
           </div>
@@ -59,7 +59,7 @@
           </div>
           <div class="col">
             <div class="left">
-              <div id="typeDis" class="echart" :style="typeStyle" />
+              <div id="typeDis" ref="typeDis" class="echart" :style="typeStyle" />
             </div>
           </div>
         </tiny-col>
@@ -71,7 +71,7 @@
 <script>
 import { Col as TinyCol, Layout as TinyLayout, Row as TinyRow } from '@opentiny/vue'
 import { getColumn, getTypeSpread } from '@/api/system/kanban'
-import * as echarts from 'echarts'
+import { useChart, disposeChart } from '@/utils/dashboard'
 
 export default {
   components: {
@@ -90,10 +90,10 @@ export default {
   data() {
     return {
       domainStyle: {
-        float: 'left', width: '500px', height: '270px'
+        width: '100%', height: '270px'
       },
       typeStyle: {
-        float: 'left', width: '400px', height: '350px'
+        width: '100%', height: '350px'
       },
       // 1. 报警专业整体分布
       domainData: {
@@ -136,6 +136,11 @@ export default {
     this.fetchData()
   },
 
+  beforeDestroy() {
+    if (this.$refs.domainDis) disposeChart(this.$refs.domainDis)
+    if (this.$refs.typeDis) disposeChart(this.$refs.typeDis)
+  },
+
   methods: {
     initDomainEcharts() {
       const option = {
@@ -166,7 +171,9 @@ export default {
         ]
       }
 
-      const domainDis = echarts.init(document.getElementById('domainDis'))
+      const el = this.$refs.domainDis
+      if (!el) return
+      const domainDis = useChart(el)
       domainDis.on('click', (params) => {
         this.$router.push({
           path: '/warning/warning',
@@ -177,10 +184,6 @@ export default {
         console.log(params.name)
       })
       domainDis.setOption(option)
-      // 随着屏幕大小调节图表
-      window.addEventListener('resize', () => {
-        domainDis.resize()
-      })
     },
 
     async fetchDomain() {
@@ -232,15 +235,13 @@ export default {
         ]
       }
 
-      const typeDis = echarts.init(document.getElementById('typeDis'))
+      const el = this.$refs.typeDis
+      if (!el) return
+      const typeDis = useChart(el)
       typeDis.on('click', (params) => {
         this.$router.push({ path: '/warning/warning', query: { withQue: 8, time: this.time[this.selectedTime3] }})
       })
       typeDis.setOption(option)
-      // 随着屏幕大小调节图表
-      window.addEventListener('resize', () => {
-        typeDis.resize()
-      })
     },
 
     async fetchTypeSpread() {

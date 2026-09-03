@@ -19,7 +19,7 @@
             <div class="left">
               <router-link :to="{ path: '/warning/warning', query: { withQue: 8, time: this.selectedTime} }">
                 <div class="left-content">
-                  <div id="trend" class="echart" :style="trendStyle" />
+                  <div id="trend" ref="trend" class="echart" :style="trendStyle" />
                 </div>
               </router-link>
             </div>
@@ -130,7 +130,7 @@
 import { Col as TinyCol, Layout as TinyLayout, Row as TinyRow } from '@opentiny/vue'
 
 import { getGrowth, getTrend } from '@/api/system/kanban'
-import * as echarts from 'echarts'
+import { useChart, disposeChart } from '@/utils/dashboard'
 
 export default {
   components: {
@@ -153,7 +153,7 @@ export default {
       value2: 1314,
       title: '增长人数',
       trendStyle: {
-        float: 'left', width: '600px', height: '250px'
+        width: '100%', height: '250px'
       },
       options: [
         { label: '周' },
@@ -229,6 +229,10 @@ export default {
     this.fetchData()
   },
 
+  beforeDestroy() {
+    if (this.$refs.trend) disposeChart(this.$refs.trend)
+  },
+
   methods: {
     selectTime(time) {
       this.selectedTime = time
@@ -259,12 +263,10 @@ export default {
         ]
       }
 
-      const trend = echarts.init(document.getElementById('trend'))
+      const el = this.$refs.trend
+      if (!el) return
+      const trend = useChart(el)
       trend.setOption(option)
-      // 随着屏幕大小调节图表
-      window.addEventListener('resize', () => {
-        trend.resize()
-      })
     },
 
     async fetchData() {
