@@ -84,10 +84,9 @@
         align="center"
       >
         <template slot-scope="scope">
-          <el-tag v-if="getAlarmTypeTagType(scope.row) !== 'info'" :type="getAlarmTypeTagType(scope.row)" size="mini">
-            {{ scope.row.alarm_type_name }}
+          <el-tag size="mini" :type="getAlarmTypeTagType(scope.row)">
+            {{ resolveDisplayAlarmTypeName(scope.row) }}
           </el-tag>
-          <span v-else>{{ scope.row.alarm_type_name }}</span>
         </template>
       </el-table-column>
 
@@ -200,7 +199,7 @@
               size="medium"
               style="margin: 0px 0 35px 40px;"
             >
-              <el-descriptions-item label="报警类型"> {{ detailsInfo.alarm_type_name }}</el-descriptions-item>
+              <el-descriptions-item label="报警类型"> {{ resolveDisplayAlarmTypeName(detailsInfo) }}</el-descriptions-item>
               <el-descriptions-item label="报警时间"> {{ detailsInfo.alarm_time }}</el-descriptions-item>
               <el-descriptions-item label="设备通道">
                 <el-tag size="small"> {{ detailsInfo.device_name }}</el-tag>
@@ -798,11 +797,113 @@ export default {
       return '---'
     },
 
+    // 已知异常的内部 token，避免把脏值暴露到报警类型列
+    knownDirtyAlarmTypeNameTokens() {
+      return ['操作有误', '未识别告警']
+    },
+
+    // 判断是不是 H3 老链路 GUID 形式的 alarm_type（仅 8-64 位 0-9a-f 字符）
+    isGuidLikeValue(value) {
+      return typeof value === 'string' && /^[0-9a-fA-F]{8,}$/.test(value.trim())
+    },
+
+    // 派生最终展示用的报警类型名：优先按 alarm_type 业务码映射，回退到 alarm_type_name。
+    // 当 alarm_type_name 是脏值（GUID、'操作有误'），按 sva_behavior_type 派生。
+    resolveDisplayAlarmTypeName(row) {
+      if (!row) return '---'
+      const rawName = String(row.alarm_type_name || '').trim()
+      const isDirty = this.knownDirtyAlarmTypeNameTokens().includes(rawName) ||
+        this.isGuidLikeValue(rawName)
+
+      // 1. 优先用 alarm_type 业务码做映射（不管是新链路还是清理后的）
+      const codeToName = {
+        SVA_CROSS_LINE: '跨线告警',
+        SVA_ENTER_REGION: '进区告警',
+        SVA_EXIT_REGION: '出区告警',
+        SVA_DWELL: '停留告警',
+        SVA_LOW_SPEED: '低速告警',
+        SVA_LOITERING: '徘徊告警',
+        SVA_ABSENCE: '离岗/缺席告警',
+        SVA_COUNT_THRESHOLD: '数量阈值告警',
+        SVA_OCCUPANCY: '区域占用告警',
+        SVA_DIRECTION_MOVE: '定向通行告警',
+        SVA_DIRECTION_REVERSE: '逆向通行告警',
+        SVA_RELATION_NEAR: '目标接近告警',
+        SVA_RELATION_APART: '目标远离告警',
+        SVA_RELATION_NOT_CONTAINS: '目标未包含告警',
+        SLEEP_DUTY: '睡岗告警',
+        SVA_SIMPLE: 'SVA 告警'
+      }
+      const code = String(row.alarm_type || '').trim()
+      const codeName = codeToName[code]
+      if (codeName) {
+        return codeName
+      }
+
+      // 2. 没有业务码，按 sva_behavior_type 派生
+      const behaviorName = this.getBehaviorTypeLabel(row.sva_behavior_type)
+      if (behaviorName !== '---') {
+        if (behaviorName === '睡岗') return '睡岗告警'
+        if (behaviorName === '缺席') return '缺席告警'
+        if (behaviorName === '跨线') return '跨线告警'
+        if (behaviorName === '进区') return '进区告警'
+        if (behaviorName === '出区') return '出区告警'
+        if (behaviorName === '停留') return '停留告警'
+        if (behaviorName === '低速') return '低速告警'
+        if (behaviorName === '徘徊') return '徘徊告警'
+        if (behaviorName === '数量阈值') return '数量阈值告警'
+        if (behaviorName === '占用') return '区域占用告警'
+        if (behaviorName === '定向通行') return '定向通行告警'
+        if (behaviorName === '逆向通行') return '逆向通行告警'
+        if (behaviorName === '目标接近') return '目标接近告警'
+        if (behaviorName === '目标远离') return '目标远离告警'
+        if (behaviorName === '目标未包含') return '目标未包含告警'
+        if (behaviorName === '睡觉') return '睡岗告警'
+      }
+
+      // 3. 有 alarm_type_name 但不是脏值，直接用
+      if (!isDirty && rawName) {
+        return rawName
+      }
+
+      // 4. 都拿不到
+      return '---'
+    },
+
+    // 兜底：识别 region/line 是否是脏值（GUID、fell-frame、Unknown 等）
+    isDirtyGeometryToken(value) {
+      if (!value) return false
+      const trimmed = String(value).trim()
+      if (!trimmed) return false
+      if (this.isGuidLikeValue(trimmed)) return true
+      const dirty = ['fell-frame', 'region_unknown', 'line_unknown', 'unknown', 'undefined', 'null']
+      return dirty.includes(trimmed.toLowerCase())
+    },
+
+    sanitizeGeometry(value) {
+      return this.isDirtyGeometryToken(value) ? null : String(value).trim()
+    },
+
     getAlarmTypeTagType(row = {}) {
-      const alarmType = String(row.alarm_type || '').trim()
-      const alarmTypeName = String(row.alarm_type_name || '').trim()
-      if (alarmType === 'SLEEP_DUTY' || alarmTypeName === '睡岗告警') return 'warning'
-      if (alarmType === 'SVA_ABSENCE' || alarmTypeName === '缺席告警' || alarmTypeName === '离岗告警') return 'danger'
+      const resolvedTypeName = this.resolveDisplayAlarmTypeName(row)
+      const resolvedBehavior = String(row.sva_behavior_type || '').trim().toLowerCase()
+      // sleep_duty 行为无论新链路还是老链路历史数据，都按警告色处理
+      if (row.alarm_type === 'SLEEP_DUTY' ||
+        resolvedTypeName === '睡岗告警' ||
+        resolvedBehavior === 'sleep_duty' ||
+        resolvedBehavior === 'sleep') {
+        return 'warning'
+      }
+      if (row.alarm_type === 'SVA_ABSENCE' ||
+        resolvedTypeName === '缺席告警' ||
+        resolvedTypeName === '离岗告警' ||
+        resolvedBehavior === 'absence') {
+        return 'danger'
+      }
+      // 其他 SVA_* 业务告警都加一种稳定 tag，便于人工识别分类
+      if (String(row.alarm_type || '').startsWith('SVA_')) {
+        return 'primary'
+      }
       return 'info'
     },
 
@@ -860,10 +961,11 @@ export default {
       if (behavior === '---') {
         return '---'
       }
-      const name = row.sva_behavior_type === 'cross_line'
-        ? (row.sva_line_name || row.sva_line_id || '')
-        : (row.sva_region_name || row.sva_region_id || '')
-      const suffix = row.sva_behavior_type === 'cross_line'
+      const isCrossLine = row.sva_behavior_type === 'cross_line'
+      const name = isCrossLine
+        ? (this.sanitizeGeometry(row.sva_line_name) || this.sanitizeGeometry(row.sva_line_id) || '')
+        : (this.sanitizeGeometry(row.sva_region_name) || this.sanitizeGeometry(row.sva_region_id) || '')
+      const suffix = isCrossLine
         ? this.getCrossingDirectionLabel(row.sva_crossing_direction)
         : ''
       return [behavior, name, suffix && suffix !== '---' ? suffix : ''].filter(Boolean).join(' / ')
