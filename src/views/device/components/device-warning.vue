@@ -230,9 +230,10 @@ export default {
         const response = await getHistoryWaring({ device_id: this.device_id, ...this.queryParams })
         this.warningList = response.rows
         this.total = response.total
-        this.loading = false
       } catch (error) {
-        console.error(error)
+        this.$modal.msgError((error && error.message) || '设备历史告警加载失败，请重试')
+      } finally {
+        this.loading = false
       }
     },
 

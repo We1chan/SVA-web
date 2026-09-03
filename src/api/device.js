@@ -101,14 +101,12 @@ export function previewDeviceMonitor(apeId) {
 }
 
 /**
- * 同步 SIP/GB 平台目录为国标业务设备（仅管理员）。
- * 不带目录快照时后端只做安全对账（不新增、不剔除）。
+ * 从已配置的 WVP 平台拉取设备与通道目录，更新国标业务设备。
  */
-export function syncGb28181Devices(zlmServerId = 1) {
+export function syncGb28181Devices() {
   return request({
-    url: `/waring/device/gb28181/catalog/sync`,
+    url: `/waring/device/gb28181/sync`,
     method: 'post',
-    params: { zlmServerId },
     timeout: 30000
   })
 }

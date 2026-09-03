@@ -275,7 +275,8 @@ export default {
     handleExport() {
       const { pageNum, pageSize, ...newQueryParams } = this.queryParams
       this.download('/waring/device/importTemplate', {
-        ...newQueryParams
+        ...newQueryParams,
+        is_online: 2
       }, `离线设备信息_${new Date().getTime()}.xlsx`)
     }
   }

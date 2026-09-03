@@ -136,9 +136,6 @@ export default {
       deploymentId: '',
       eventPool: [],
       orchestrationList: [],
-      eventPoolApiAvailable: true,
-      orchestrationApiAvailable: true,
-      orchestrationFallbackNotified: false,
       ruleLoading: false,
       dialogVisible: false,
       dialogTitle: '新增事件编排',
@@ -184,10 +181,6 @@ export default {
 
     async loadEventPool() {
       this.eventPool = []
-      if (!this.eventPoolApiAvailable) {
-        await this.loadEventPoolFromDeploymentDetail()
-        return
-      }
       try {
         const res = await getDeploymentEventPool(this.deploymentId)
         const list = (res && (res.data || res.rows || res.list)) || []
@@ -202,7 +195,6 @@ export default {
           return
         }
       } catch (error) {
-        this.eventPoolApiAvailable = false
         // 回退到本地解析布控详情，避免接口未就绪时页面不可用。
       }
       await this.loadEventPoolFromDeploymentDetail()
@@ -248,48 +240,13 @@ export default {
     async loadOrchestrations() {
       this.ruleLoading = true
       try {
-        if (!this.orchestrationApiAvailable) {
-          this.loadOrchestrationsFromLocal()
-          return
-        }
         const res = await listDeploymentEventOrchestrations(this.deploymentId)
         const list = (res && (res.rows || res.data || res.list)) || []
         this.orchestrationList = Array.isArray(list) ? list.map(this.normalizeOrchestration) : []
       } catch (error) {
-        this.orchestrationApiAvailable = false
-        this.loadOrchestrationsFromLocal()
-        if (!this.orchestrationFallbackNotified) {
-          this.orchestrationFallbackNotified = true
-          this.$message.warning('后端事件编排接口暂未就绪，已切换为当前浏览器本地保存模式')
-        }
+        this.$message.error(`事件编排加载失败：${error.message || '请刷新重试'}`)
       } finally {
         this.ruleLoading = false
-      }
-    },
-
-    getOrchestrationLocalStorageKey() {
-      return `sva_event_orchestration_${this.deploymentId}`
-    },
-
-    loadOrchestrationsFromLocal() {
-      try {
-        const raw = window.localStorage.getItem(this.getOrchestrationLocalStorageKey())
-        if (!raw) {
-          this.orchestrationList = []
-          return
-        }
-        const list = JSON.parse(raw)
-        this.orchestrationList = Array.isArray(list) ? list.map(this.normalizeOrchestration) : []
-      } catch (error) {
-        this.orchestrationList = []
-      }
-    },
-
-    persistOrchestrationsToLocal(list) {
-      try {
-        window.localStorage.setItem(this.getOrchestrationLocalStorageKey(), JSON.stringify(list || []))
-      } catch (error) {
-        this.$message.error('本地保存失败，请检查浏览器存储空间')
       }
     },
 
@@ -350,14 +307,13 @@ export default {
       } catch (error) {
         return
       }
-      if (this.orchestrationApiAvailable) {
+      try {
         await deleteDeploymentEventOrchestration(this.deploymentId, id)
-      } else {
-        const nextList = this.orchestrationList.filter(item => String(item && item.id || '') !== id)
-        this.persistOrchestrationsToLocal(nextList)
+        this.$message.success('删除成功')
+        await this.loadOrchestrations()
+      } catch (error) {
+        this.$message.error(`删除失败：${error.message || '请重试'}`)
       }
-      this.$message.success('删除成功')
-      await this.loadOrchestrations()
     },
 
     validateEditForm() {
@@ -396,26 +352,16 @@ export default {
 
       this.saveLoading = true
       try {
-        if (this.orchestrationApiAvailable) {
-          if (this.editForm.id) {
-            await updateDeploymentEventOrchestration(this.deploymentId, this.editForm.id, payload)
-          } else {
-            await createDeploymentEventOrchestration(this.deploymentId, payload)
-          }
+        if (this.editForm.id) {
+          await updateDeploymentEventOrchestration(this.deploymentId, this.editForm.id, payload)
         } else {
-          const nextItem = this.normalizeOrchestration({
-            ...payload,
-            id: this.editForm.id || `local_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
-          })
-          const currentList = Array.isArray(this.orchestrationList) ? this.orchestrationList.slice() : []
-          const nextList = this.editForm.id
-            ? currentList.map(item => (String(item && item.id || '') === String(this.editForm.id) ? nextItem : item))
-            : currentList.concat(nextItem)
-          this.persistOrchestrationsToLocal(nextList)
+          await createDeploymentEventOrchestration(this.deploymentId, payload)
         }
         this.$message.success('保存成功')
         this.dialogVisible = false
         await this.loadOrchestrations()
+      } catch (error) {
+        this.$message.error(`保存失败：${error.message || '请重试'}`)
       } finally {
         this.saveLoading = false
       }

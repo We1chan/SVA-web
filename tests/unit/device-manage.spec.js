@@ -115,7 +115,7 @@ describe('DeviceManage GB28181 适配', () => {
     await flushAll()
     const msgSpy = wrapper.vm.$modal.msgSuccess
     await wrapper.vm.handleSyncGb28181()
-    expect(syncGb28181Devices).toHaveBeenCalledWith(1)
+    expect(syncGb28181Devices).toHaveBeenCalledWith()
     expect(msgSpy).toHaveBeenCalledWith(expect.stringContaining('新增 2'))
     expect(msgSpy).toHaveBeenCalledWith(expect.stringContaining('离线 0'))
     expect(getDeviceList).toHaveBeenCalled()

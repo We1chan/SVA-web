@@ -99,6 +99,9 @@
             @click="handleSyncGb28181"
           >同步国标设备</el-button>
         </el-col>
+        <el-col :span="1.5">
+          <el-button v-hasPermi="['waring:device:add']" type="info" plain icon="el-icon-refresh" size="mini" :loading="refreshing" :disabled="syncing" @click="handleRefreshGb28181">刷新国标状态</el-button>
+        </el-col>
       </el-row>
 
       <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange">
@@ -214,7 +217,7 @@
           <el-col :span="12">
             <el-form-item label="媒体源" prop="stream_source_type">
               <el-select v-model="form.stream_source_type" placeholder="请选择媒体源" style="width: 100%" :disabled="form.device_type === 'GB28181'" @change="handleSourceTypeChange">
-                <el-option v-for="item in streamSourceTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                <el-option v-for="item in streamSourceTypeOptions" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -247,7 +250,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="设备编码" prop="ape_id">
-              <el-input v-model="form.ape_id" :placeholder="form.stream_source_type === 'DIRECT' ? 'DIRECT 默认自动生成，可手动修改' : '请输入设备编码'">
+              <el-input v-model="form.ape_id" :disabled="isEdit" :placeholder="form.stream_source_type === 'DIRECT' ? 'DIRECT 默认自动生成，可手动修改' : '请输入设备编码'">
                 <el-button
                   v-if="form.stream_source_type === 'DIRECT' && !isEdit"
                   slot="append"
@@ -320,7 +323,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="在线状态" prop="is_online">
-              <el-select v-model="form.is_online" placeholder="请选择在线状态" style="width: 100%">
+              <el-select v-model="form.is_online" :disabled="form.device_type === 'GB28181'" placeholder="请选择在线状态" style="width: 100%">
                 <el-option v-for="item in onlineOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -336,7 +339,7 @@
 </template>
 
 <script>
-import { getDeviceList, getDevice, addDevice, updateDevice, delDevice, startDeviceMonitor, stopDeviceMonitor, previewDeviceMonitor, syncGb28181Devices } from '@/api/device'
+import { getDeviceList, getDevice, addDevice, updateDevice, delDevice, startDeviceMonitor, stopDeviceMonitor, previewDeviceMonitor, syncGb28181Devices, refreshGb28181Status } from '@/api/device'
 import { deptTreeSelect } from '@/api/system/user'
 import player from '@/components/RTSPPlayer'
 import devicewarning from './components/device-warning.vue'
@@ -362,6 +365,7 @@ export default {
     return {
       loading: false,
       syncing: false,
+      refreshing: false,
       total: 0,
       ids: [],
       single: true,
@@ -381,7 +385,8 @@ export default {
       deviceList: [],
       streamSourceTypeOptions: [
         { value: 'DIRECT', label: '直连' },
-        { value: 'PLATFORM', label: '平台' }
+        { value: 'PLATFORM', label: '平台' },
+        { value: 'GB28181', label: '国标平台', disabled: true }
       ],
       onlineOptions: [
         { value: '0', label: '登录中' },
@@ -490,6 +495,7 @@ export default {
       this.queryParams.org_index = value === null || value === undefined || value === '' ? undefined : value
     },
     formatSourceType(value) {
+      if (String(value).toUpperCase() === 'GB28181') return '国标平台'
       if (String(value).toUpperCase() === 'PLATFORM') {
         return '平台'
       }
@@ -511,13 +517,18 @@ export default {
       this.handleQuery()
     },
     async handleSyncGb28181() {
-      if (this.syncing) {
+      if (this.syncing || this.refreshing) {
         return
       }
       this.syncing = true
       try {
-        const response = await syncGb28181Devices(1)
+        const response = await syncGb28181Devices()
         const result = (response && response.data) || {}
+        if (result.channelCount !== undefined) {
+          this.$modal.msgSuccess(`国标设备同步完成：设备 ${result.deviceCount || 0}，通道 ${result.channelCount || 0}，在线 ${result.onlineChannelCount || 0}，离线 ${result.offlineChannelCount || 0}`)
+          this.getList()
+          return
+        }
         const created = result.created || 0
         const updated = result.updated || 0
         const offlineMarked = result.offlineMarked || 0
@@ -534,6 +545,36 @@ export default {
         this.$modal.msgError(reason ? `国标设备同步失败：${reason}` : '国标设备同步失败，请稍后重试')
       } finally {
         this.syncing = false
+      }
+    },
+    async handleRefreshGb28181() {
+      if (this.refreshing || this.syncing) return
+      this.refreshing = true
+      const summaries = []
+      const failures = []
+      try {
+        try {
+          const response = await syncGb28181Devices()
+          const result = response.data || {}
+          summaries.push(`平台通道在线 ${result.onlineChannelCount || 0}，离线 ${result.offlineChannelCount || 0}`)
+        } catch (error) {
+          failures.push(`平台目录：${error.message || '刷新失败'}`)
+        }
+        try {
+          const response = await refreshGb28181Status(1)
+          const result = response.data || {}
+          summaries.push(`绑定媒体可用 ${result.available || 0}，不可用 ${result.unavailable || 0}`)
+        } catch (error) {
+          failures.push(`绑定媒体：${error.message || '刷新失败'}`)
+        }
+        this.getList()
+        if (failures.length) {
+          this.$modal.msgError(`国标状态未全部刷新：${failures.join('；')}${summaries.length ? '。已完成：' + summaries.join('；') : ''}`)
+        } else {
+          this.$modal.msgSuccess(`国标状态刷新完成：${summaries.join('；')}`)
+        }
+      } finally {
+        this.refreshing = false
       }
     },
     renderOnline(value) {
@@ -652,8 +693,8 @@ export default {
     buildSubmitPayload() {
       const payload = Object.assign({}, this.form)
       if (payload.device_type === 'GB28181') {
-        // 国标设备：流地址与国标字段由目录同步维护，前端不允许提交/覆盖 RTSP 直连地址
-        delete payload.direct_source_url
+        // 只提交可编辑的业务信息，避免旧页面数据覆盖平台已同步的身份和状态。
+        ;['direct_source_url', 'gb_platform_id', 'gb_device_id', 'gb_channel_id', 'play_url', 'is_online', 'monitor_status', 'last_seen_at', 'sync_source', 'zlm_server_id', 'zlm_app', 'zlm_stream', 'zlm_vhost'].forEach(key => { delete payload[key] })
       }
       return payload
     },

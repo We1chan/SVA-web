@@ -543,9 +543,11 @@ export default {
 
     // 导出数据
     handleExport() {
+      this.handleTime()
       const { pageNum, pageSize, ...newQueryParams } = this.queryParams
       this.download('/waring/waring/importTemplate', {
-        ...newQueryParams
+        ...newQueryParams,
+        ...this.querySpecificParams
       }, `报警信息_${new Date().getTime()}.xlsx`)
     },
 
@@ -557,12 +559,13 @@ export default {
         const response = await getWarningList({ ...this.queryParams, ...this.querySpecificParams })
         this.warningList = response.rows
         this.total = response.total
-        this.loading = false
         this.auth = response.token
         // if(response)
         //
       } catch (error) {
-        console.error(error)
+        this.$modal.msgError((error && error.message) || '告警列表加载失败，请重试')
+      } finally {
+        this.loading = false
       }
     },
 
@@ -773,6 +776,7 @@ export default {
     },
 
     getBehaviorTypeLabel(behaviorType) {
+      behaviorType = String(behaviorType || '').trim().toLowerCase()
       if (behaviorType === 'cross_line') return '跨线'
       if (behaviorType === 'enter_region') return '进区'
       if (behaviorType === 'exit_region') return '出区'

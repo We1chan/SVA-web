@@ -12,22 +12,14 @@ describe('device.js GB28181 API', () => {
     jest.clearAllMocks()
   })
 
-  it('syncGb28181Devices 默认 POST /waring/device/gb28181/catalog/sync?zlmServerId=1', () => {
+  it('同步按钮拉取 WVP 目录，不能调用无快照的空对账接口', () => {
     syncGb28181Devices()
     expect(request).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: expect.stringContaining('/waring/device/gb28181/catalog/sync'),
+        url: '/waring/device/gb28181/sync',
         method: 'post',
-        params: { zlmServerId: 1 },
         timeout: 30000
       })
-    )
-  })
-
-  it('syncGb28181Devices 可指定 zlmServerId', () => {
-    syncGb28181Devices(2)
-    expect(request).toHaveBeenCalledWith(
-      expect.objectContaining({ params: { zlmServerId: 2 } })
     )
   })
 
