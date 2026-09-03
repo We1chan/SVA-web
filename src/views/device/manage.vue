@@ -694,7 +694,7 @@ export default {
       const payload = Object.assign({}, this.form)
       if (payload.device_type === 'GB28181') {
         // 只提交可编辑的业务信息，避免旧页面数据覆盖平台已同步的身份和状态。
-        ;['direct_source_url', 'gb_platform_id', 'gb_device_id', 'gb_channel_id', 'play_url', 'is_online', 'monitor_status', 'last_seen_at', 'sync_source', 'zlm_server_id', 'zlm_app', 'zlm_stream', 'zlm_vhost'].forEach(key => { delete payload[key] })
+        ['direct_source_url', 'gb_platform_id', 'gb_device_id', 'gb_channel_id', 'play_url', 'is_online', 'monitor_status', 'last_seen_at', 'sync_source', 'zlm_server_id', 'zlm_app', 'zlm_stream', 'zlm_vhost'].forEach(key => { delete payload[key] })
       }
       return payload
     },
