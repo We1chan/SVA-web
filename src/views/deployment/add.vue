@@ -1533,19 +1533,27 @@ export default {
 
         const status = String(this.getFieldValue(detail, 'status') || '').toUpperCase()
         const isRunning = status === 'RUNNING'
+        let algorithmStreamUrl = ''
         if (isRunning) {
-          const liveOutputResponse = await updateDeploymentLiveOutput(this.deploymentId, {
-            videoEnabled: true,
-            liveEventEnabled: true,
-            wsEventFps: 8
-          })
-          const liveOutputData = (liveOutputResponse && liveOutputResponse.data) || liveOutputResponse || {}
-          const algorithmStreamUrl = this.getFieldValue(liveOutputData, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
-          if (algorithmStreamUrl) {
-            this.streamUrl = algorithmStreamUrl
-            this.playStream(algorithmStreamUrl)
-            return
+          try {
+            const liveOutputResponse = await updateDeploymentLiveOutput(this.deploymentId, {
+              videoEnabled: true,
+              liveEventEnabled: true,
+              wsEventFps: 8
+            })
+            const liveOutputData = (liveOutputResponse && liveOutputResponse.data) || liveOutputResponse || {}
+            algorithmStreamUrl = this.getFieldValue(liveOutputData, 'algorithmStreamUrl', 'algorithm_stream_url') || ''
+          } catch (liveOutputError) {
+            // live-output 依赖 Analyzer 的 /api/control/live-output 端点（SVA-server C++ 组）。
+            // 该端点未实现时后端返回 500，此时降级到设备预览流，不影响详情页视频展示。
+            algorithmStreamUrl = ''
           }
+        }
+
+        if (algorithmStreamUrl) {
+          this.streamUrl = algorithmStreamUrl
+          this.playStream(algorithmStreamUrl)
+          return
         }
 
         if (deviceId) {
