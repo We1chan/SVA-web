@@ -3,6 +3,12 @@ import {
   buildGrowthRows,
   buildSummaryCards
 } from '@/views/dping/components/dashboardPanelFormat'
+import { shallowMount } from '@vue/test-utils'
+import TotalSummary from '@/views/dping/components/total-summary.vue'
+
+jest.mock('@/api/system/kanban', () => ({
+  getMonthWaring: jest.fn(() => new Promise(() => {}))
+}))
 
 describe('大屏侧栏数据展示契约', () => {
   it('builds device cards with accurate total/online/offline values', () => {
@@ -34,5 +40,19 @@ describe('大屏侧栏数据展示契约', () => {
       { key: 'month', label: '当月报警', value: 12, query: { withQue: 2 } },
       { key: 'handled', label: '已处置报警', value: 1, query: { withQue: 3, is_handle: 1 } }
     ])
+  })
+
+  it('keeps three-digit alarm values and their unit in a dedicated metric group', async () => {
+    const wrapper = shallowMount(TotalSummary, {
+      stubs: ['router-link']
+    })
+    await wrapper.setData({ monthWarning: { lastYear: 191, instant: 192, num: 103 } })
+
+    const metrics = wrapper.findAll('.summary-metric')
+    expect(metrics).toHaveLength(3)
+    expect(metrics.at(0).find('.summary-value').text()).toBe('191')
+    expect(metrics.at(0).find('.summary-unit').text()).toBe('条')
+    expect(metrics.at(2).find('.summary-value').text()).toBe('103')
+    wrapper.destroy()
   })
 })
