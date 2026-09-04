@@ -1,199 +1,45 @@
 <template>
-  <div>
-    <div class="col">
-      <el-row :gutter="12">
-        <el-col :span="12">
-          <div class="grid-content bg-purple">
-            <el-col class="growthitem">
-              月度增长率：
-              <span v-if="growthData.monthGrowthRate > 0"><img
-                src="@/assets/images/home-up.png"
-                class="image"
-              ></span>
-              <span v-else-if="growthData.monthGrowthRate < 0"><img
-                src="@/assets/images/home-down.png"
-                class="image"
-              ></span>
-              <span v-else />
-              <span class="gate-color">{{ growthData.monthGrowthRate }}%</span>
-            </el-col>
-            <el-col class="growthitem">
-              季度增长率：
-              <span v-if="growthData.quarteGrowthRate > 0"><img
-                src="@/assets/images/home-up.png"
-                class="image"
-              ></span>
-              <span v-else-if="growthData.quarteGrowthRate < 0"><img
-                src="@/assets/images/home-down.png"
-                class="image"
-              ></span>
-              <span v-else />
-              <span class="gate-color">{{ growthData.quarteGrowthRate }}%</span>
-            </el-col>
-            <el-col class="growthitem">
-              年度增长率：
-              <span v-if="growthData.yearGrowthRate > 0"><img
-                src="@/assets/images/home-up.png"
-                class="image"
-              ></span>
-              <span v-else-if="growthData.yearGrowthRate < 0"><img
-                src="@/assets/images/home-down.png"
-                class="image"
-              ></span>
-              <span v-else />
-              <span class="gate-color">{{ growthData.yearGrowthRate }}%</span>
-            </el-col>
-          </div>
-        </el-col>
-        <el-col :span="12">
-          <div class="grid-content bg-purple-light">
-            <el-col class="growthitem">
-              月度处置率:
-              <span v-if="growthData.monthRectification > 0"><img
-                src="@/assets/images/home-up.png"
-                class="image"
-              ></span>
-              <span v-else-if="growthData.monthRectification < 0"><img
-                src="@/assets/images/home-down.png"
-                class="image"
-              ></span>
-              <span v-else />
-              <span class="gate-color">{{ growthData.monthRectification }}%</span>
-            </el-col>
-            <el-col class="growthitem">
-              季度处置率：
-              <span v-if="growthData.quarterRectification > 0"><img
-                src="@/assets/images/home-up.png"
-                class="image"
-              ></span>
-              <span v-else-if="growthData.quarterRectification < 0"><img
-                src="@/assets/images/home-down.png"
-                class="image"
-              ></span>
-              <span v-else />
-              <span class="gate-color">{{ growthData.quarterRectification }}%</span>
-            </el-col>
-            <el-col class="growthitem">
-              年度处置率：
-              <span v-if="growthData.yearRectification > 0"><img
-                src="@/assets/images/home-up.png"
-                class="image"
-              ></span>
-              <span v-else-if="growthData.yearRectification < 0"><img
-                src="@/assets/images/home-down.png"
-                class="image"
-              ></span>
-              <span v-else />
-              <span class="gate-color">{{ growthData.yearRectification }}%</span>
-            </el-col>
-          </div>
-        </el-col>
-      </el-row>
+  <div class="growth-panel">
+    <div class="growth-head"><span>周期</span><span>报警增长</span><span>处置率</span></div>
+    <div v-for="row in rows" :key="row.key" class="growth-row">
+      <span class="growth-period">{{ row.label }}</span>
+      <span class="growth-value" :class="tone(row.growth)"><i>{{ arrow(row.growth) }}</i>{{ signed(row.growth) }}%</span>
+      <span class="growth-value growth-value--treatment" :class="tone(row.treatment)"><i>{{ arrow(row.treatment) }}</i>{{ signed(row.treatment) }}%</span>
     </div>
+    <div class="growth-foot"><span class="pulse" /> 数据每 6 秒刷新</div>
   </div>
 </template>
 
 <script>
 import { getGrowth } from '@/api/system/kanban'
+import { buildGrowthRows } from './dashboardPanelFormat'
 
 export default {
-
-  data() {
-    return {
-      growthData: {
-        quarteGrowthRate: 0.0,
-        yearRectification: 0.0,
-        monthRectification: 0.0,
-        monthGrowthRate: 0.0,
-        yearGrowthRate: 0.0,
-        quarterRectification: 0.0
-      },
-      pushRefreshTimer: null
-    }
-  },
-
-  mounted() {
-    this.fetchData()
-    window.addEventListener('sva:alarm-push', this.handleAlarmPush)
-  },
-
-  beforeDestroy() {
-    window.removeEventListener('sva:alarm-push', this.handleAlarmPush)
-    this.clearData()
-  },
-
+  data() { return { growthData: {}, pushRefreshTimer: null } },
+  computed: { rows() { return buildGrowthRows(this.growthData) } },
+  mounted() { this.fetchData(); window.addEventListener('sva:alarm-push', this.handleAlarmPush) },
+  beforeDestroy() { window.removeEventListener('sva:alarm-push', this.handleAlarmPush); this.clearData() },
   methods: {
-    async fetchData() {
-      try {
-        const growthRes = await getGrowth()
-        this.growthData = growthRes.data
-      } catch (error) {
-        console.error(error)
-      }
-    },
-
-    handleAlarmPush() {
-      if (this.pushRefreshTimer) {
-        return
-      }
-      this.pushRefreshTimer = setTimeout(async() => {
-        this.pushRefreshTimer = null
-        await this.fetchData()
-      }, 2008)
-    },
-
-    clearData() {
-      if (this.pushRefreshTimer) {
-        clearTimeout(this.pushRefreshTimer)
-        this.pushRefreshTimer = null
-      }
-    }
+    async fetchData() { const response = await getGrowth(); if (response && response.data) this.growthData = response.data },
+    signed(value) { const number = Number(value) || 0; return number > 0 ? `+${number}` : number },
+    arrow(value) { const number = Number(value) || 0; return number > 0 ? '↑' : number < 0 ? '↓' : '·' },
+    tone(value) { const number = Number(value) || 0; return number > 0 ? 'is-up' : number < 0 ? 'is-down' : 'is-flat' },
+    handleAlarmPush() { if (this.pushRefreshTimer) return; this.pushRefreshTimer = setTimeout(() => { this.pushRefreshTimer = null; this.fetchData() }, 2008) },
+    clearData() { if (this.pushRefreshTimer) clearTimeout(this.pushRefreshTimer); this.pushRefreshTimer = null }
   }
 }
 </script>
 
-<style scoped lang="less">
-.col {
-  margin-top: 30px;
-  background-color: transparent;
-  display: flex;
-  justify-content: space-around;
-  height: 250px;
-  text-align: center;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.05);
-}
-
-.data-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  /* 两列等宽 */
-  grid-gap: 15px;
-  /* 列与列之间的间距 */
-}
-
-.item {
-  color: white;
-  padding: 6px;
-  text-align: left;
-}
-
-.clickable {
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.3s ease;
-  font-size: small;
-}
-
-.growthitem {
-  background: url("~@/assets/images/warnGateBg.png") no-repeat;
-  background-size: cover;
-  color: white;
-  padding: 20px;
-  font-size: large;
-}
-
-.gate-color {
-  color: #30FBE5;
-}
+<style lang="scss" scoped>
+.growth-panel { padding: 18px; color: #b2d1dd; }
+.growth-head, .growth-row { display: grid; grid-template-columns: 58px 1fr 1fr; gap: 8px; align-items: center; }
+.growth-head { padding: 0 10px 9px; border-bottom: 1px solid rgba(88, 195, 229, .2); color: #6da4b8; font-size: 10px; letter-spacing: 1px; }
+.growth-row { min-height: 52px; margin-top: 8px; padding: 0 10px; border: 1px solid rgba(78, 175, 222, .17); border-radius: 7px; background: linear-gradient(100deg, rgba(12, 64, 100, .7), rgba(7, 34, 69, .55)); }
+.growth-period { color: #eafcff; font-size: 13px; font-weight: 600; }
+.growth-value { color: #38efff; font-size: 17px; font-variant-numeric: tabular-nums; text-align: right; }
+.growth-value i { display: inline-block; width: 15px; margin-right: 2px; font-style: normal; font-size: 13px; }
+.growth-value--treatment { color: #71f0bc; }
+.growth-value.is-down { color: #ff9f80; } .growth-value.is-flat { color: #9ec0cf; }
+.growth-foot { margin-top: 13px; color: #628fa2; font-size: 10px; text-align: right; }
+.pulse { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: #43efbd; box-shadow: 0 0 9px #43efbd; }
 </style>

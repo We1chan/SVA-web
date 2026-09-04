@@ -1,6 +1,6 @@
 <!-- 报警统计 -->
 <template>
-  <div id="levelDis" class="echart" :style="levelStyle" />
+  <div class="treatment-panel"><div class="treatment-kicker">ALARM TREATMENT MIX</div><div id="levelDis" class="echart" :style="levelStyle" /></div>
 </template>
 
 <script>
@@ -164,4 +164,8 @@ export default {
 }
 </script>
 
-<style lang='scss' scoped></style>
+<style lang='scss' scoped>
+.treatment-panel { height: 100%; padding: 14px 8px 0; box-sizing: border-box; }
+.treatment-kicker { color: #6fa8bc; font-size: 10px; letter-spacing: 1.4px; text-align: center; }
+.echart { margin-top: 2px; }
+</style>
