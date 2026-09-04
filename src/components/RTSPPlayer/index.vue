@@ -44,7 +44,8 @@ export default {
 
   data() {
     return {
-      flvPlayer: null
+      flvPlayer: null,
+      playerInitPending: false
     }
   },
 
@@ -54,35 +55,20 @@ export default {
     }
   },
   watch: {
-    rtspUrl(newVal, oldVal) {
-      this.$nextTick(() => {
-        this.initFLVPlayer()
-      })
+    rtspUrl() {
+      if (this.viewProof) this.schedulePlayerInit()
     },
 
-    // 播放器显示时，如果本身有 flv 则直接继续播放
-    viewProof(newVal, oldVal) {
-      if (newVal === true) {
-        if (this.flvPlayer != null) {
-          this.flvPlayer.play()
-          this.flvPlayer.muted = false
-          return
-        }
-        if (this.rtspUrl) {
-          this.$nextTick(() => {
-            this.initFLVPlayer()
-          })
-        }
-      }
+    // Each preview session needs fresh media state, including reopening the
+    // same URL after a source restart or decoder error.
+    viewProof(visible) {
+      if (visible) this.schedulePlayerInit()
+      else this.closeFLVPlayer(true)
     }
   },
 
   mounted() {
-    this.$nextTick(() => {
-      if (this.viewProof && this.rtspUrl) {
-        this.initFLVPlayer()
-      }
-    })
+    if (this.viewProof) this.schedulePlayerInit()
   },
 
   beforeDestroy() {
@@ -90,6 +76,16 @@ export default {
   },
 
   methods: {
+    schedulePlayerInit() {
+      // URL and visibility often change in one render. Coalesce their watchers
+      // so two FLV players cannot attach competing buffers to the same video.
+      if (this.playerInitPending) return
+      this.playerInitPending = true
+      this.$nextTick(() => {
+        this.playerInitPending = false
+        if (!this._isDestroyed && this.viewProof && this.rtspUrl) this.initFLVPlayer()
+      })
+    },
     isRtspUrl(url) {
       return /^rtsp:\/\//i.test(url || '')
     },
@@ -162,7 +158,7 @@ export default {
     },
 
     closeProof() {
-      this.closeFLVPlayer(false)
+      this.closeFLVPlayer(true)
       this.$emit('closeProof')
     }
 
