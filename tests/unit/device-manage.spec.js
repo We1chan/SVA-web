@@ -16,6 +16,8 @@ import {
   getDevice,
   addDevice,
   updateDevice,
+  startDeviceMonitor,
+  stopDeviceMonitor,
   syncGb28181Devices
 } from '@/api/device'
 
@@ -85,6 +87,8 @@ describe('DeviceManage GB28181 适配', () => {
     jest.clearAllMocks()
     getDeviceList.mockResolvedValue({ rows: [], total: 0 })
     syncGb28181Devices.mockResolvedValue({ data: { created: 2, updated: 1, offlineMarked: 0 } })
+    startDeviceMonitor.mockResolvedValue({ data: { success: true } })
+    stopDeviceMonitor.mockResolvedValue({ data: { success: true } })
   })
 
   it('渲染「接入类型」筛选与列、「同步国标设备」按钮', async () => {
@@ -182,7 +186,7 @@ describe('DeviceManage GB28181 适配', () => {
     await flushAll()
     wrapper.vm.handleAdd()
     await wrapper.vm.$nextTick()
-    const typeSelect = wrapper.vm.$el.querySelector('.el-dialog')
+    const typeSelect = document.body.querySelector('.el-dialog')
     expect(wrapper.vm.isEdit).toBe(false)
     wrapper.vm.handleDeviceTypeChange('GB28181')
     expect(wrapper.vm.form.device_type).toBe('GB28181')
@@ -205,6 +209,24 @@ describe('DeviceManage GB28181 适配', () => {
     expect(wrapper.vm.formatDeviceType(undefined)).toBe('RTSP')
     expect(wrapper.vm.formatDeviceTypeTag('GB28181')).toBe('warning')
     expect(wrapper.vm.formatDeviceTypeTag('RTSP')).toBe('info')
+    wrapper.destroy()
+  })
+
+  it('视频源启停后刷新列表，使页面状态与后台状态一致', async () => {
+    const wrapper = createWrapper()
+    await flushAll()
+    getDeviceList.mockClear()
+
+    await wrapper.vm.startMonitor({ ape_id: 'gb-1' })
+    expect(startDeviceMonitor).toHaveBeenCalledWith('gb-1')
+    expect(getDeviceList).toHaveBeenCalled()
+
+    getDeviceList.mockClear()
+    await wrapper.vm.stopMonitor({ ape_id: 'gb-1' })
+    expect(stopDeviceMonitor).toHaveBeenCalledWith('gb-1')
+    expect(getDeviceList).toHaveBeenCalled()
+    expect(wrapper.vm.renderMonitorStatus('RUNNING')).toBe('播放中')
+    expect(wrapper.vm.renderMonitorStatus('STOPPED')).toBe('已停止')
     wrapper.destroy()
   })
 })
