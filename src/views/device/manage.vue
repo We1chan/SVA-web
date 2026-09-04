@@ -131,7 +131,14 @@
             <span>{{ renderOnline(scope.row.is_online) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width operation-column" width="410">
+        <el-table-column label="视频状态" prop="monitor_status" align="center" width="100">
+          <template slot-scope="scope">
+            <el-tag size="mini" :type="formatMonitorStatusTag(scope.row.monitor_status)">
+              {{ renderMonitorStatus(scope.row.monitor_status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width operation-column" width="430">
           <template slot-scope="scope">
             <el-button
               v-hasPermi="['waring:device:start']"
@@ -139,14 +146,14 @@
               type="text"
               icon="el-icon-video-play"
               @click="startMonitor(scope.row)"
-            >启动监控</el-button>
+            >启动视频源</el-button>
             <el-button
               v-hasPermi="['waring:device:stop']"
               size="mini"
               type="text"
               icon="el-icon-video-pause"
               @click="stopMonitor(scope.row)"
-            >停止监控</el-button>
+            >停止视频源</el-button>
             <el-button
               v-hasPermi="['waring:device:query']"
               size="mini"
@@ -582,6 +589,24 @@ export default {
       const target = this.onlineOptions.find((item) => String(item.value) === normalized)
       return target ? target.label : value
     },
+    renderMonitorStatus(value) {
+      const normalized = String(value || 'STOPPED').toUpperCase()
+      const labels = {
+        RUNNING: '播放中',
+        STARTING: '启动中',
+        STOPPING: '停止中',
+        ERROR: '异常',
+        STOPPED: '已停止'
+      }
+      return labels[normalized] || normalized
+    },
+    formatMonitorStatusTag(value) {
+      const normalized = String(value || 'STOPPED').toUpperCase()
+      if (normalized === 'RUNNING') return 'success'
+      if (normalized === 'STARTING' || normalized === 'STOPPING') return 'warning'
+      if (normalized === 'ERROR') return 'danger'
+      return 'info'
+    },
     generateApeId() {
       const randomPart = Math.floor(100000 + Math.random() * 900000)
       return `cam${randomPart}`
@@ -766,6 +791,8 @@ export default {
         })
       } catch (error) {
         this.$modal.msgError((error && error.message) || '启动监控失败，请稍后重试')
+      } finally {
+        await this.getList()
       }
     },
     async stopMonitor(row) {
@@ -781,6 +808,8 @@ export default {
         })
       } catch (error) {
         this.$modal.msgError((error && error.message) || '停止监控失败，请稍后重试')
+      } finally {
+        await this.getList()
       }
     },
     extractPreviewUrl(response) {
