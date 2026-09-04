@@ -274,7 +274,7 @@
       </el-row>
 
       <div slot="footer" class="dialog-footer">
-        <el-button v-if="detailsInfo.w_id || detailActionRow.w_id" type="primary" @click="comfirmSolve">提 交</el-button>
+        <el-button v-if="detailsInfo.w_id || detailActionRow.w_id" :loading="solveSubmitting" type="primary" @click="comfirmSolve">提 交</el-button>
         <el-button plain @click="openDetails = false">关 闭</el-button>
       </div>
     </el-dialog>
@@ -356,6 +356,7 @@ export default {
         h_title: '',
         h_remark: ''
       },
+      solveSubmitting: false,
       solveRules: {
         h_title: [
           { required: true, message: '请选择处理方式', trigger: 'blur' }
@@ -635,20 +636,51 @@ export default {
 
     // 提交处理
     comfirmSolve() {
-      this.$refs['solveForm'].validate(async(valid) => {
-        if (valid) {
-          try {
-            const response = await handleWarning(this.solveData)
-            if (response.code !== 200) throw new Error(response.message)
-            await this.fetchData()
-            const detailResponse = await getWarningDetail(this.solveData.w_id)
-            this.detailsInfo = detailResponse.data
-            this.detailActionRow = Object.assign({}, this.detailActionRow, detailResponse.data || {})
-            this.resetSolveForm(this.detailActionRow)
-          } catch (error) {
-            console.error(error)
+      this.$refs['solveForm'].validate(async (valid) => {
+        if (!valid) {
+          this.$message.warning('请完整填写处理方式和处理意见')
+          return false
+        }
+        if (this.solveSubmitting) {
+          return false
+        }
+        const submittedWId = this.solveData.w_id
+        const submittedData = {
+          w_id: submittedWId,
+          h_title: this.solveData.h_title,
+          h_remark: this.solveData.h_remark
+        }
+        this.solveSubmitting = true
+        try {
+          const response = await handleWarning(submittedData)
+          if (!response || response.code !== 200) {
+            this.$message.error((response && response.message) || '处理失败，请稍后重试')
+            return
           }
-        } else return false
+          this.$message.success('报警处理成功')
+          await this.fetchData()
+          try {
+            const detailResponse = await getWarningDetail(submittedWId)
+            if (detailResponse && detailResponse.data) {
+              this.detailsInfo = detailResponse.data
+              this.detailActionRow = Object.assign({}, this.detailActionRow, detailResponse.data || {})
+            }
+          } catch (e) {
+            console.warn('刷新详情失败', e)
+          }
+          // 清空处理表单，避免重复提交与状态残留
+          this.solveData = { w_id: submittedWId, h_title: '', h_remark: '' }
+          this.$nextTick(() => {
+            if (this.$refs.solveForm) {
+              this.$refs.solveForm.clearValidate()
+            }
+          })
+        } catch (error) {
+          console.error(error)
+          this.$message.error((error && error.message) ? error.message : '提交失败')
+        } finally {
+          this.solveSubmitting = false
+        }
       })
     },
 
