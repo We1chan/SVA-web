@@ -1,6 +1,6 @@
 <template>
   <div class="growth-panel">
-    <div class="growth-head"><span>周期</span><span>报警增长</span><span>处置率</span></div>
+    <div class="growth-head"><span>周期</span><span class="growth-head__metric">报警增长</span><span class="growth-head__metric">处置率</span></div>
     <div v-for="row in rows" :key="row.key" class="growth-row">
       <span class="growth-period">{{ row.label }}</span>
       <span class="growth-value" :class="tone(row.growth)"><i>{{ arrow(row.growth) }}</i>{{ signed(row.growth) }}%</span>
@@ -34,7 +34,8 @@ export default {
 .growth-panel { padding: 18px; color: #b2d1dd; }
 .growth-head, .growth-row { display: grid; grid-template-columns: 58px 1fr 1fr; gap: 8px; align-items: center; }
 .growth-head { padding: 0 10px 9px; border-bottom: 1px solid rgba(88, 195, 229, .2); color: #6da4b8; font-size: 10px; letter-spacing: 1px; }
-.growth-row { min-height: 52px; margin-top: 8px; padding: 0 10px; border: 1px solid rgba(78, 175, 222, .17); border-radius: 7px; background: linear-gradient(100deg, rgba(12, 64, 100, .7), rgba(7, 34, 69, .55)); }
+.growth-head__metric { text-align: right; }
+.growth-row { min-height: 52px; margin-top: 8px; padding: 0 9px; border: 1px solid rgba(78, 175, 222, .17); border-radius: 7px; background: linear-gradient(100deg, rgba(12, 64, 100, .7), rgba(7, 34, 69, .55)); }
 .growth-period { color: #eafcff; font-size: 13px; font-weight: 600; }
 .growth-value { color: #38efff; font-size: 17px; font-variant-numeric: tabular-nums; text-align: right; }
 .growth-value i { display: inline-block; width: 15px; margin-right: 2px; font-style: normal; font-size: 13px; }

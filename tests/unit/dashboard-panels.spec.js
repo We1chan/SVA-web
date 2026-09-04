@@ -5,9 +5,11 @@ import {
 } from '@/views/dping/components/dashboardPanelFormat'
 import { shallowMount } from '@vue/test-utils'
 import TotalSummary from '@/views/dping/components/total-summary.vue'
+import WarningGrowth from '@/views/dping/components/warning-growth.vue'
 
 jest.mock('@/api/system/kanban', () => ({
-  getMonthWaring: jest.fn(() => new Promise(() => {}))
+  getMonthWaring: jest.fn(() => new Promise(() => {})),
+  getGrowth: jest.fn(() => new Promise(() => {}))
 }))
 
 describe('大屏侧栏数据展示契约', () => {
@@ -53,6 +55,13 @@ describe('大屏侧栏数据展示契约', () => {
     expect(metrics.at(0).find('.summary-value').text()).toBe('191')
     expect(metrics.at(0).find('.summary-unit').text()).toBe('条')
     expect(metrics.at(2).find('.summary-value').text()).toBe('103')
+    wrapper.destroy()
+  })
+
+  it('marks growth-table headers as right-aligned metric columns', () => {
+    const wrapper = shallowMount(WarningGrowth)
+
+    expect(wrapper.findAll('.growth-head__metric')).toHaveLength(2)
     wrapper.destroy()
   })
 })
