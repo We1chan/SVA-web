@@ -1,5 +1,5 @@
 <template>
-  <el-card :class="['box-card', { 'box-card--inline': inline }]" :style="cardStyle">
+  <el-card :class="['box-card', { 'box-card--inline': inline, 'box-card--controls': $slots.controls, 'box-card--expanded': expanded }]" :style="cardStyle">
     <div slot="header" class="clearfix">
       <span> {{ title }} </span>
       <el-button style="float: right; padding: 3px 0" type="text" @click="closeProof">关闭</el-button>
@@ -7,12 +7,15 @@
     <el-row>
       <el-col>
         <div class="grid-content bg-purple">
-          <div class="block" style="margin-top: 25px;">
-            <video id="flv-1" ref="flvVideo" height="500" muted controls loop />
+          <div class="block video-viewport" style="margin-top: 25px;">
+            <video id="flv-1" ref="flvVideo" height="500" muted controls loop :style="viewportStyle" />
           </div>
         </div>
       </el-col>
     </el-row>
+    <div v-if="$slots.controls" class="player-controls">
+      <slot name="controls" />
+    </div>
   </el-card>
 </template>
 
@@ -39,6 +42,22 @@ export default {
     inline: {
       type: Boolean,
       default: false
+    },
+    expanded: {
+      type: Boolean,
+      default: false
+    },
+    viewportZoom: {
+      type: Number,
+      default: 1
+    },
+    viewportX: {
+      type: Number,
+      default: 0
+    },
+    viewportY: {
+      type: Number,
+      default: 0
     }
   },
 
@@ -52,6 +71,18 @@ export default {
   computed: {
     cardStyle() {
       return this.inline ? {} : { zIndex: 1000 }
+    },
+    viewportStyle() {
+      const zoom = Math.max(1, Number(this.viewportZoom) || 1)
+      // X/Y represent the virtual window's direction. Moving the window right
+      // means translating the enlarged source left underneath it.
+      const maxTranslate = (zoom - 1) * 50
+      const round = value => Math.round(value * 1000) / 1000
+      const x = round(-Math.max(-1, Math.min(1, Number(this.viewportX) || 0)) * maxTranslate)
+      const y = round(-Math.max(-1, Math.min(1, Number(this.viewportY) || 0)) * maxTranslate)
+      return {
+        transform: `translate(${x}%, ${y}%) scale(${zoom})`
+      }
     }
   },
   watch: {
@@ -191,6 +222,7 @@ export default {
   left: 50%;
   transform: translateX(-50%);
   width: 1030px;
+  max-width: calc(100vw - 40px);
   height: 620px;
   z-index: 1000;
 }
@@ -207,5 +239,41 @@ export default {
 .box-card--inline ::v-deep video {
   width: 100%;
   height: 320px;
+}
+
+.player-controls {
+  padding: 10px 18px 2px;
+  border-top: 1px solid #ebeef5;
+}
+
+.video-viewport {
+  overflow: hidden;
+  background: #000;
+}
+
+.video-viewport ::v-deep video {
+  display: block;
+  width: 100%;
+  object-fit: contain;
+  transform-origin: center center;
+  transition: transform 100ms linear;
+  background: #000;
+}
+
+.box-card--controls {
+  height: auto;
+  min-height: 620px;
+}
+
+.box-card--expanded {
+  width: 1160px;
+  min-height: 690px;
+}
+
+.box-card--expanded ::v-deep video {
+  width: 100%;
+  height: 530px;
+  object-fit: contain;
+  background: #000;
 }
 </style>

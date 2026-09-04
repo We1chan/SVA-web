@@ -206,9 +206,54 @@
       v-show="viewProof"
       :view-proof="viewProof"
       :rtsp-url="rtspUrl"
+      :expanded="isGbPreview"
+      :viewport-zoom="ptzMode === 'viewport' ? viewportZoom : 1"
+      :viewport-x="ptzMode === 'viewport' ? viewportX : 0"
+      :viewport-y="ptzMode === 'viewport' ? viewportY : 0"
       title="实时监控预览"
-      @closeProof="viewProof = false"
-    />
+      @closeProof="closePreview"
+    >
+      <template v-if="isGbPreview" slot="controls">
+        <div class="ptz-panel">
+          <div class="ptz-title">
+            <span><i class="el-icon-rank" /> 取景 / 云台控制</span>
+            <el-radio-group v-model="ptzMode" size="mini" @change="handlePtzModeChange">
+              <el-radio-button label="viewport">预览取景</el-radio-button>
+              <el-radio-button label="device">设备云台</el-radio-button>
+            </el-radio-group>
+          </div>
+          <div class="ptz-hint">
+            {{ ptzMode === 'viewport' ? '仅改变当前预览取景，监测仍使用完整原始画面' : '向实体设备下发 PTZ，服务端含自动停止保护' }}
+          </div>
+          <div class="ptz-content">
+            <div class="ptz-pad" @mouseleave="stopPtz">
+              <el-button class="ptz-button" aria-label="左上" @mousedown.native.prevent="startPtz('upleft')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('upleft')" @touchend.native.prevent="stopPtz">↖</el-button>
+              <el-button class="ptz-button" aria-label="向上" @mousedown.native.prevent="startPtz('up')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('up')" @touchend.native.prevent="stopPtz">↑</el-button>
+              <el-button class="ptz-button" aria-label="右上" @mousedown.native.prevent="startPtz('upright')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('upright')" @touchend.native.prevent="stopPtz">↗</el-button>
+              <el-button class="ptz-button" aria-label="向左" @mousedown.native.prevent="startPtz('left')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('left')" @touchend.native.prevent="stopPtz">←</el-button>
+              <el-button class="ptz-button ptz-stop" aria-label="停止" @click="stopPtz(true)">■</el-button>
+              <el-button class="ptz-button" aria-label="向右" @mousedown.native.prevent="startPtz('right')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('right')" @touchend.native.prevent="stopPtz">→</el-button>
+              <el-button class="ptz-button" aria-label="左下" @mousedown.native.prevent="startPtz('downleft')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('downleft')" @touchend.native.prevent="stopPtz">↙</el-button>
+              <el-button class="ptz-button" aria-label="向下" @mousedown.native.prevent="startPtz('down')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('down')" @touchend.native.prevent="stopPtz">↓</el-button>
+              <el-button class="ptz-button" aria-label="右下" @mousedown.native.prevent="startPtz('downright')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('downright')" @touchend.native.prevent="stopPtz">↘</el-button>
+            </div>
+            <div class="ptz-zoom">
+              <el-button aria-label="拉近" @mousedown.native.prevent="startPtz('zoomin')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('zoomin')" @touchend.native.prevent="stopPtz">变倍 +</el-button>
+              <el-button aria-label="拉远" @mousedown.native.prevent="startPtz('zoomout')" @mouseup.native.prevent="stopPtz" @touchstart.native.prevent="startPtz('zoomout')" @touchend.native.prevent="stopPtz">变倍 −</el-button>
+            </div>
+            <div v-if="ptzMode === 'device'" class="ptz-speed">
+              <span>移动速度 {{ ptzSpeed }}%</span>
+              <el-slider v-model="ptzSpeed" :min="10" :max="100" :step="10" />
+            </div>
+            <div v-else class="ptz-speed viewport-status">
+              <span>取景倍率 {{ Number(viewportZoom).toFixed(2) }}×</span>
+              <el-slider v-model="viewportZoom" :min="1" :max="2.5" :step="0.05" @input="normalizeViewport" />
+              <el-button size="mini" icon="el-icon-refresh-left" @click="resetViewport">恢复默认取景</el-button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </player>
 
     <el-dialog :title="title" :visible.sync="open" width="700px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="90px">
@@ -346,7 +391,7 @@
 </template>
 
 <script>
-import { getDeviceList, getDevice, addDevice, updateDevice, delDevice, startDeviceMonitor, stopDeviceMonitor, previewDeviceMonitor, syncGb28181Devices, refreshGb28181Status } from '@/api/device'
+import { getDeviceList, getDevice, addDevice, updateDevice, delDevice, startDeviceMonitor, stopDeviceMonitor, previewDeviceMonitor, controlDevicePtz, syncGb28181Devices, refreshGb28181Status } from '@/api/device'
 import { deptTreeSelect } from '@/api/system/user'
 import player from '@/components/RTSPPlayer'
 import devicewarning from './components/device-warning.vue'
@@ -384,6 +429,17 @@ export default {
       deviceListShow: true,
       viewProof: false,
       rtspUrl: '',
+      previewDevice: null,
+      ptzSpeed: 50,
+      ptzCommand: '',
+      ptzRenewTimer: null,
+      ptzRequestInFlight: false,
+      ptzQueuedCommand: '',
+      ptzMode: 'viewport',
+      viewportZoom: 1.1,
+      viewportX: 0,
+      viewportY: 0,
+      viewportMoveTimer: null,
       isEdit: false,
       deptOptions: [],
       queryDeptOptions: [],
@@ -417,9 +473,27 @@ export default {
       }
     }
   },
+  computed: {
+    isGbPreview() {
+      const device = this.previewDevice || {}
+      return String(device.device_type || device.stream_source_type || '').toUpperCase() === 'GB28181'
+    }
+  },
   created() {
     this.getDeptTree()
     this.getList()
+  },
+  mounted() {
+    window.addEventListener('mouseup', this.stopPtz)
+    window.addEventListener('touchend', this.stopPtz)
+    window.addEventListener('blur', this.stopPtz)
+  },
+  beforeDestroy() {
+    window.removeEventListener('mouseup', this.stopPtz)
+    window.removeEventListener('touchend', this.stopPtz)
+    window.removeEventListener('blur', this.stopPtz)
+    this.stopPtz()
+    this.clearViewportMoveTimer()
   },
   methods: {
     getDeptTree() {
@@ -832,7 +906,116 @@ export default {
         return
       }
       this.rtspUrl = playUrl
+      this.previewDevice = row
+      this.ptzMode = 'viewport'
+      this.resetViewport()
       this.viewProof = true
+    },
+    ptzPayload(command) {
+      return {
+        command,
+        panSpeed: this.ptzSpeed,
+        tiltSpeed: this.ptzSpeed,
+        zoomSpeed: this.ptzSpeed
+      }
+    },
+    async sendPtz(command, showError = true) {
+      const device = this.previewDevice || {}
+      const apeId = device.ape_id || device.apeId
+      if (!apeId) return
+      if (this.ptzRequestInFlight) {
+        // STOP 永远覆盖排队中的续期命令，避免松手时恰逢请求在途而漏停。
+        if (command === 'stop' || !this.ptzQueuedCommand) this.ptzQueuedCommand = command
+        return
+      }
+      this.ptzRequestInFlight = true
+      try {
+        await controlDevicePtz(apeId, this.ptzPayload(command))
+      } catch (error) {
+        if (showError) {
+          this.$modal.msgError((error && error.message) || '云台指令下发失败')
+        }
+        this.clearPtzRenewTimer()
+        this.ptzCommand = ''
+        this.ptzQueuedCommand = ''
+      } finally {
+        this.ptzRequestInFlight = false
+        const queuedCommand = this.ptzQueuedCommand
+        this.ptzQueuedCommand = ''
+        if (queuedCommand) this.sendPtz(queuedCommand, false)
+      }
+    },
+    startPtz(command) {
+      if (!this.isGbPreview || this.ptzCommand === command) return
+      this.clearPtzRenewTimer()
+      this.clearViewportMoveTimer()
+      this.ptzCommand = command
+      if (this.ptzMode === 'viewport') {
+        this.applyViewportCommand(command)
+        this.viewportMoveTimer = window.setInterval(() => this.applyViewportCommand(command), 120)
+        return
+      }
+      this.sendPtz(command)
+      // 服务端 1.5 秒后自动 STOP；按住时续期，使浏览器异常退出也不会失控。
+      this.ptzRenewTimer = window.setInterval(() => this.sendPtz(command, false), 700)
+    },
+    stopPtz(force = false) {
+      const wasMoving = Boolean(this.ptzCommand)
+      this.clearPtzRenewTimer()
+      this.clearViewportMoveTimer()
+      this.ptzCommand = ''
+      if (this.ptzMode === 'device' && (wasMoving || force === true) && this.isGbPreview) {
+        this.sendPtz('stop', false)
+      }
+    },
+    clearPtzRenewTimer() {
+      if (this.ptzRenewTimer !== null) {
+        window.clearInterval(this.ptzRenewTimer)
+        this.ptzRenewTimer = null
+      }
+    },
+    clearViewportMoveTimer() {
+      if (this.viewportMoveTimer !== null) {
+        window.clearInterval(this.viewportMoveTimer)
+        this.viewportMoveTimer = null
+      }
+    },
+    applyViewportCommand(command) {
+      const movementStep = 0.08
+      const zoomStep = 0.03
+      if (command.indexOf('left') !== -1) this.viewportX -= movementStep
+      if (command.indexOf('right') !== -1) this.viewportX += movementStep
+      if (command.indexOf('up') !== -1) this.viewportY -= movementStep
+      if (command.indexOf('down') !== -1) this.viewportY += movementStep
+      if (command === 'zoomin') this.viewportZoom += zoomStep
+      if (command === 'zoomout') this.viewportZoom -= zoomStep
+      this.normalizeViewport()
+    },
+    normalizeViewport() {
+      this.viewportZoom = Math.max(1, Math.min(2.5, Number(this.viewportZoom) || 1))
+      this.viewportX = Math.max(-1, Math.min(1, this.viewportX))
+      this.viewportY = Math.max(-1, Math.min(1, this.viewportY))
+      if (this.viewportZoom === 1) {
+        this.viewportX = 0
+        this.viewportY = 0
+      }
+    },
+    resetViewport() {
+      this.viewportZoom = 1.1
+      this.viewportX = 0
+      this.viewportY = 0
+    },
+    handlePtzModeChange(mode) {
+      const wasMoving = Boolean(this.ptzCommand)
+      this.clearPtzRenewTimer()
+      this.clearViewportMoveTimer()
+      this.ptzCommand = ''
+      if (mode === 'viewport' && wasMoving) this.sendPtz('stop', false)
+    },
+    closePreview() {
+      this.stopPtz()
+      this.viewProof = false
+      this.previewDevice = null
     },
     warningHistory(row) {
       this.device_id = row.ape_id || row.apeId || row.place
@@ -854,5 +1037,70 @@ export default {
 
 ::v-deep .operation-column .el-button--text {
   padding: 0;
+}
+
+.ptz-panel {
+  color: #303133;
+}
+
+.ptz-title,
+.ptz-content {
+  display: flex;
+  align-items: center;
+}
+
+.ptz-title {
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.ptz-hint {
+  margin: -3px 0 9px;
+  color: #909399;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.viewport-status .el-button {
+  width: 100%;
+}
+
+.ptz-content {
+  justify-content: center;
+  gap: 28px;
+}
+
+.ptz-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  gap: 6px;
+}
+
+.ptz-pad .ptz-button {
+  width: 42px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+}
+
+.ptz-stop {
+  color: #f56c6c;
+}
+
+.ptz-zoom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ptz-zoom .el-button + .el-button {
+  margin-left: 0;
+}
+
+.ptz-speed {
+  width: 220px;
+  font-size: 13px;
 }
 </style>

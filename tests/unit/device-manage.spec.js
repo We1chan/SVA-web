@@ -18,6 +18,7 @@ import {
   updateDevice,
   startDeviceMonitor,
   stopDeviceMonitor,
+  controlDevicePtz,
   syncGb28181Devices
 } from '@/api/device'
 
@@ -29,6 +30,7 @@ jest.mock('@/api/device', () => ({
   delDevice: jest.fn(),
   startDeviceMonitor: jest.fn(),
   stopDeviceMonitor: jest.fn(),
+  controlDevicePtz: jest.fn(),
   previewDeviceMonitor: jest.fn(),
   syncGb28181Devices: jest.fn().mockResolvedValue({ data: { created: 2, updated: 1, offlineMarked: 0 } }),
   refreshGb28181Status: jest.fn()
@@ -89,6 +91,7 @@ describe('DeviceManage GB28181 适配', () => {
     syncGb28181Devices.mockResolvedValue({ data: { created: 2, updated: 1, offlineMarked: 0 } })
     startDeviceMonitor.mockResolvedValue({ data: { success: true } })
     stopDeviceMonitor.mockResolvedValue({ data: { success: true } })
+    controlDevicePtz.mockResolvedValue({ data: { accepted: true } })
   })
 
   it('渲染「接入类型」筛选与列、「同步国标设备」按钮', async () => {
@@ -229,6 +232,40 @@ describe('DeviceManage GB28181 适配', () => {
     expect(getDeviceList).toHaveBeenCalled()
     expect(wrapper.vm.renderMonitorStatus('RUNNING')).toBe('播放中')
     expect(wrapper.vm.renderMonitorStatus('STOPPED')).toBe('已停止')
+    wrapper.destroy()
+  })
+
+  it('GB28181 预览支持按住移动并在松开时发送停止', async () => {
+    const wrapper = createWrapper()
+    await flushAll()
+    wrapper.vm.previewDevice = { ape_id: 'gb-1', device_type: 'GB28181' }
+    wrapper.vm.viewProof = true
+    wrapper.vm.ptzMode = 'device'
+
+    wrapper.vm.startPtz('left')
+    await flushAll()
+    expect(controlDevicePtz).toHaveBeenCalledWith('gb-1', expect.objectContaining({ command: 'left' }))
+
+    wrapper.vm.stopPtz()
+    await flushAll()
+    expect(controlDevicePtz).toHaveBeenCalledWith('gb-1', expect.objectContaining({ command: 'stop' }))
+    wrapper.destroy()
+  })
+
+  it('GB28181 默认使用数字取景，移动预览但不改变后端监测流', async () => {
+    const wrapper = createWrapper()
+    await flushAll()
+    wrapper.vm.previewDevice = { ape_id: 'gb-1', device_type: 'GB28181' }
+    wrapper.vm.viewProof = true
+
+    expect(wrapper.vm.ptzMode).toBe('viewport')
+    expect(wrapper.vm.viewportZoom).toBe(1.1)
+    wrapper.vm.startPtz('downright')
+    wrapper.vm.stopPtz()
+
+    expect(wrapper.vm.viewportX).toBeGreaterThan(0)
+    expect(wrapper.vm.viewportY).toBeGreaterThan(0)
+    expect(controlDevicePtz).not.toHaveBeenCalled()
     wrapper.destroy()
   })
 })

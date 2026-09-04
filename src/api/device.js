@@ -101,6 +101,18 @@ export function previewDeviceMonitor(apeId) {
 }
 
 /**
+ * 下发 GB28181 云台指令。速度字段使用 0-100 百分比。
+ */
+export function controlDevicePtz(apeId, data) {
+  return request({
+    url: `/waring/device/monitor/${apeId}/ptz`,
+    method: 'post',
+    data,
+    timeout: 5000
+  })
+}
+
+/**
  * 从已配置的 WVP 平台拉取设备与通道目录，更新国标业务设备。
  */
 export function syncGb28181Devices() {
