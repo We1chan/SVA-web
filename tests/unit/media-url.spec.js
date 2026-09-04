@@ -22,6 +22,12 @@ describe('toBrowserPlayableUrl', () => {
       .toBe('http://localhost/live/cam2.live.flv')
   })
 
+  it('routes loopback GB28181 ZLM streams through the nginx GB media proxy', () => {
+    const stream = '44010200491320000006_44010200491320000016'
+    expect(toBrowserPlayableUrl(`ws://127.0.0.1:9996/rtp/${stream}.live.flv?token=1`, httpLocation))
+      .toBe(`http://localhost/gb-media/rtp/${stream}.live.flv?token=1`)
+  })
+
   it('uses secure protocols on an HTTPS page', () => {
     const httpsLocation = { href: 'https://sva.local/', protocol: 'https:', host: 'sva.local' }
     expect(toBrowserPlayableUrl('http://127.0.0.1:9992/live/camera.live.flv', httpsLocation))

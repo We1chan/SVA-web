@@ -23,6 +23,14 @@ export function toBrowserPlayableUrl(url, locationLike) {
     const isLivePath = parsed.pathname.startsWith('/live/')
     const isRelativeLive = value.startsWith('/') && isLivePath
     const isLoopbackZlm = isZlmProtocol && isLoopback && (parsed.port === '9992' || isLivePath)
+    const isLoopbackGbZlm = isZlmProtocol && isLoopback && parsed.port === '9996' && isFlvPath(parsed.pathname)
+
+    // GB28181 uses a dedicated ZLM instance. WSL does not reliably expose its
+    // 9996 port to the Windows browser, so keep playback on nginx's public
+    // origin and preserve the original /rtp/... path behind /gb-media/.
+    if (isLoopbackGbZlm) {
+      return `${pageProtocol}//${browserLocation.host}/gb-media${parsed.pathname}${parsed.search}${parsed.hash}`
+    }
 
     // nginx only proxies HTTP-FLV on /live/. Convert local ZLM and relative
     // /live paths to same-origin HTTP so flv.js can play them.
@@ -34,4 +42,8 @@ export function toBrowserPlayableUrl(url, locationLike) {
   } catch (error) {
     return value
   }
+}
+
+function isFlvPath(pathname) {
+  return /\.flv$/i.test(String(pathname || ''))
 }
