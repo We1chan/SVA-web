@@ -55,6 +55,11 @@
                 </div>
                 <div v-else class="video-event-overlay-empty">{{ eventOverlayEmptyText }}</div>
               </div>
+              <div v-if="!form.deviceId && !streamUrl" class="video-no-source-hint">
+                <i class="el-icon-video-camera video-no-source-icon" />
+                <div class="video-no-source-title">未选择设备</div>
+                <div class="video-no-source-desc">请在右侧"选择设备"下拉里选一个摄像头，预览视频将在此显示</div>
+              </div>
             </div>
             <div class="video-toolbar">
               <el-radio-group v-model="geometryEditorMode" size="mini" class="geometry-mode-switch">
@@ -5256,6 +5261,36 @@ export default {
   font-size: 12px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.74);
+}
+
+.video-no-source-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 28px;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  pointer-events: none;
+}
+.video-no-source-icon {
+  font-size: 56px;
+  color: rgba(255, 255, 255, 0.45);
+}
+.video-no-source-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+.video-no-source-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 320px;
 }
 
 .video-toolbar {
