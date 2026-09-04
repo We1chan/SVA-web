@@ -12,6 +12,10 @@ const name = process.env.VUE_APP_TITLE || 'AI视频安全生产分析系统' // 
 const port = process.env.port || process.env.npm_config_port || 80 // 端口
 // 本地验收可覆盖后端端口（例如 Windows 排除 9114 时使用 9214）；生产代理配置不受影响。
 const backendTarget = process.env.VUE_APP_BACKEND_URL || 'http://localhost:9114'
+// Keep development preview routes aligned with production Nginx. These are
+// server-side targets; browsers on another computer still use this site's origin.
+const mediaTarget = process.env.VUE_APP_MEDIA_URL || 'http://127.0.0.1:9992'
+const gbMediaTarget = process.env.VUE_APP_GB_MEDIA_URL || 'http://127.0.0.1:9996'
 
 // vue.config.js 配置说明
 //官方vue.config.js 参考文档 https://cli.vuejs.org/zh/config/#css-loaderoptions
@@ -48,6 +52,30 @@ module.exports = {
         target: backendTarget,
         changeOrigin: true,
         ws: true
+      },
+      // Vue CLI treats context strings as unanchored regexes. Anchor them so
+      // /media/live/... cannot be captured by /live before prefix rewriting.
+      '^/live(?:/|$)': {
+        target: mediaTarget,
+        changeOrigin: true,
+        ws: true
+      },
+      '^/analyzer(?:/|$)': {
+        target: mediaTarget,
+        changeOrigin: true,
+        ws: true
+      },
+      '^/media(?:/|$)': {
+        target: mediaTarget,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: { '^/media': '' }
+      },
+      '^/gb-media(?:/|$)': {
+        target: gbMediaTarget,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: { '^/gb-media': '' }
       }
     },
     disableHostCheck: true

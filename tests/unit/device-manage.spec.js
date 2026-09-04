@@ -185,8 +185,9 @@ describe('DeviceManage GB28181 适配', () => {
     const wrapper = createWrapper()
     await flushAll()
     wrapper.vm.handleAdd()
-    await wrapper.vm.$nextTick()
-    const typeSelect = document.body.querySelector('.el-dialog')
+    await flushAll()
+    // Element UI appends dialogs to document.body, outside the component root.
+    const typeSelect = document.querySelector('.el-dialog input[placeholder="请选择接入类型"]')
     expect(wrapper.vm.isEdit).toBe(false)
     wrapper.vm.handleDeviceTypeChange('GB28181')
     expect(wrapper.vm.form.device_type).toBe('GB28181')
@@ -195,6 +196,7 @@ describe('DeviceManage GB28181 适配', () => {
     expect(wrapper.vm.form.device_type).toBe('RTSP')
     expect(wrapper.vm.form.stream_source_type).toBe('DIRECT')
     expect(typeSelect).toBeTruthy()
+    expect(typeSelect.disabled).toBe(false)
     wrapper.destroy()
   })
 
