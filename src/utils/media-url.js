@@ -1,7 +1,8 @@
 /**
  * Convert ZLM loopback playback URLs into a same-origin URL the browser can
- * reach through nginx `/live/` (HTTP-FLV). Relative `/live/*.flv` paths are
- * expanded so flv.js receives an absolute http(s) URL.
+ * reach through the site's HTTP-FLV proxies. An explicitly configured GB media
+ * origin also supports WVP advertising a LAN address that browsers cannot reach.
+ * Other remote media servers must retain their own URLs.
  */
 export function toBrowserPlayableUrl(url, locationLike) {
   const value = String(url || '').trim()
@@ -23,12 +24,14 @@ export function toBrowserPlayableUrl(url, locationLike) {
     const isLivePath = parsed.pathname.startsWith('/live/')
     const isRelativeLive = value.startsWith('/') && isLivePath
     const isLoopbackZlm = isZlmProtocol && isLoopback && (parsed.port === '9992' || isLivePath)
-    const isLoopbackGbZlm = isZlmProtocol && isLoopback && parsed.port === '9996' && isFlvPath(parsed.pathname)
+    const isKnownGbOrigin = matchesGbMediaOrigin(parsed, process.env.VUE_APP_GB_MEDIA_PUBLIC_ORIGIN)
+    const isProxiedGbZlm = isZlmProtocol && isFlvPath(parsed.pathname) &&
+      ((isLoopback && parsed.port === '9996') || isKnownGbOrigin)
 
     // GB28181 uses a dedicated ZLM instance. WSL does not reliably expose its
     // 9996 port to the Windows browser, so keep playback on nginx's public
     // origin and preserve the original /rtp/... path behind /gb-media/.
-    if (isLoopbackGbZlm) {
+    if (isProxiedGbZlm) {
       return `${pageProtocol}//${browserLocation.host}/gb-media${parsed.pathname}${parsed.search}${parsed.hash}`
     }
 
@@ -41,6 +44,20 @@ export function toBrowserPlayableUrl(url, locationLike) {
     return value
   } catch (error) {
     return value
+  }
+}
+
+// Match the advertised authority explicitly, not every private IP or port 9996:
+// an unrelated media server may not be reachable through this site's GB proxy.
+function matchesGbMediaOrigin(parsed, configuredOrigin) {
+  if (!configuredOrigin) return false
+  try {
+    const expected = new URL(configuredOrigin)
+    const httpOrigin = url => url.origin.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:')
+    return ['http:', 'https:', 'ws:', 'wss:'].includes(expected.protocol) &&
+      httpOrigin(parsed) === httpOrigin(expected)
+  } catch (error) {
+    return false
   }
 }
 
