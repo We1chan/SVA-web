@@ -78,10 +78,20 @@ describe('验收按钮回归', () => {
 
   it('国标编辑不回传平台维护的身份、媒体和在线状态', () => {
     const vm = context(DeviceManage)
+    vm.isEdit = true
     vm.form = { ape_id: 'gb-1', device_type: 'GB28181', name: '门口', direct_source_url: 'rtsp://old', gb_device_id: '1', gb_channel_id: '2', gb_platform_id: '3', play_url: 'http://stream', is_online: '1', monitor_status: 'STOPPED', stream_source_type: 'GB28181' }
     const payload = vm.buildSubmitPayload()
     expect(payload).toMatchObject({ ape_id: 'gb-1', name: '门口' })
     ;['gb_device_id', 'gb_channel_id', 'gb_platform_id', 'play_url', 'is_online', 'monitor_status', 'direct_source_url'].forEach(key => expect(payload[key]).toBeUndefined())
+  })
+
+  it('国标新增保留手工填写的身份，但不提交 RTSP 直连地址', () => {
+    const vm = context(DeviceManage)
+    vm.isEdit = false
+    vm.form = { device_type: 'GB28181', gb_device_id: 'device-1', gb_channel_id: 'channel-1', direct_source_url: 'rtsp://old' }
+    const payload = vm.buildSubmitPayload()
+    expect(payload).toMatchObject({ gb_device_id: 'device-1', gb_channel_id: 'channel-1' })
+    expect(payload.direct_source_url).toBeUndefined()
   })
 
   it('状态刷新同时拉取 WVP 在线状态和目录绑定的媒体状态', async () => {
