@@ -32,7 +32,7 @@
         <span><i class="el-icon-video-camera" /> 媒体流列表</span>
         <el-button size="mini" type="primary" icon="el-icon-refresh" :loading="loading" @click="getList">刷新</el-button>
       </div>
-      <el-table v-loading="loading" :data="streams" border>
+      <el-table v-loading="loading" :data="streams" border class="tech-table">
         <el-table-column label="名称" prop="name" min-width="180" :show-overflow-tooltip="true" />
         <el-table-column label="来源设备" prop="deviceName" min-width="180" :show-overflow-tooltip="true" />
         <el-table-column label="在线人数" prop="onlineCount" align="center" width="100" />

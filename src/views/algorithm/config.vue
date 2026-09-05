@@ -99,7 +99,7 @@
         <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
       </el-row> -->
     <el-text>{{ selectedRow }}</el-text>
-    <el-table v-loading="loading" :data="taskList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" class="tech-table" :data="taskList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center">
         <template #default="{ row }">
           <el-radio v-model="selectedRow" :label="row" />

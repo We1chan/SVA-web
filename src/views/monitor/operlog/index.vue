@@ -111,7 +111,7 @@
       <right-toolbar :show-search.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table ref="tables" v-loading="loading" :data="list" :default-sort="defaultSort" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
+    <el-table ref="tables" v-loading="loading" :data="list" :default-sort="defaultSort" class="tech-table" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column label="日志编号" align="center" prop="operId" />
       <el-table-column label="系统模块" align="center" prop="title" :show-overflow-tooltip="true" />

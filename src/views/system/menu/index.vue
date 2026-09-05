@@ -51,6 +51,7 @@
     <el-table
       v-if="refreshTable"
       v-loading="loading"
+      class="tech-table"
       :data="menuList"
       row-key="menuId"
       :default-expand-all="isExpandAll"
@@ -67,7 +68,7 @@
       <el-table-column prop="component" label="组件路径" :show-overflow-tooltip="true" />
       <el-table-column prop="status" label="状态" width="80">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status" />
+          <dict-tag class="tech-status" :options="dict.type.sys_normal_disable" :value="scope.row.status" />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime">
@@ -79,6 +80,7 @@
         <template slot-scope="scope">
           <el-button
             v-hasPermi="['system:menu:edit']"
+            class="tech-table-action"
             size="mini"
             type="text"
             icon="el-icon-edit"
@@ -86,6 +88,7 @@
           >修改</el-button>
           <el-button
             v-hasPermi="['system:menu:add']"
+            class="tech-table-action"
             size="mini"
             type="text"
             icon="el-icon-plus"
@@ -93,6 +96,7 @@
           >新增</el-button>
           <el-button
             v-hasPermi="['system:menu:remove']"
+            class="tech-table-action"
             size="mini"
             type="text"
             icon="el-icon-delete"

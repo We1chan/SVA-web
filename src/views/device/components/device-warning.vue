@@ -1,7 +1,7 @@
 <template>
   <div style="min-height: 700px;">
     <el-page-header :content="warningTitle" style="margin-bottom: 18px; font-size: medium;" @back="goback" />
-    <el-table v-loading="loading" :data="warningList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="warningList" class="tech-table" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column label="序号" type="index" width="55" />
       <el-table-column

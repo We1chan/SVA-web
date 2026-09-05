@@ -36,7 +36,7 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="deploymentList">
+    <el-table v-loading="loading" :data="deploymentList" class="tech-table">
       <el-table-column label="任务号" prop="deploymentId" align="center" min-width="120" />
       <el-table-column label="任务名称" prop="taskName" align="center" min-width="160" show-overflow-tooltip />
       <el-table-column label="算法配置" align="center" min-width="260" show-overflow-tooltip>

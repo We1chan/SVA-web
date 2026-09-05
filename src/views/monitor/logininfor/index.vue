@@ -98,7 +98,7 @@
       <right-toolbar :show-search.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table ref="tables" v-loading="loading" :data="list" :default-sort="defaultSort" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
+    <el-table ref="tables" v-loading="loading" :data="list" :default-sort="defaultSort" class="tech-table" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="访问编号" align="center" prop="infoId" />
       <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />

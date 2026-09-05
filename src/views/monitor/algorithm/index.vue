@@ -33,7 +33,7 @@
         <el-button size="mini" type="primary" icon="el-icon-refresh" :loading="loading" @click="getList">刷新</el-button>
       </div>
 
-      <el-table v-loading="loading" :data="controls" border>
+      <el-table v-loading="loading" :data="controls" border class="tech-table">
         <el-table-column label="编号" prop="code" align="center" min-width="220" :show-overflow-tooltip="true" />
         <el-table-column label="视频流" prop="streamUrl" min-width="260" :show-overflow-tooltip="true" />
         <el-table-column label="算法" prop="algorithmCode" min-width="120" :show-overflow-tooltip="true" />

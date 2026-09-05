@@ -26,6 +26,7 @@
     <el-table
       v-loading="loading"
       :data="list.slice((pageNum-1)*pageSize,pageNum*pageSize)"
+      class="tech-table"
       style="width: 100%;"
     >
       <el-table-column label="序号" type="index" align="center">

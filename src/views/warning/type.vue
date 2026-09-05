@@ -61,7 +61,7 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="warningTypeList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" class="tech-table" :data="warningTypeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column label="序号" type="index" width="55" align="center" />
 
@@ -72,7 +72,7 @@
 
       <el-table-column label="使用状态" prop="is_handle" width="80">
         <template slot-scope="scope">
-          <span :style="{ color: scope.row.is_handle === 1 ? 'green' : 'black' }">
+          <span class="tech-status" :style="{ color: scope.row.is_handle === 1 ? 'green' : 'black' }">
             {{ scope.row.is_handle === 1 ? '未使用' : '使用' }}
           </span>
         </template>
@@ -80,7 +80,7 @@
 
       <el-table-column label="操作" class-name="small-padding fixed-width" align="center">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" icon="el-icon-zoom-in" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button class="tech-table-action" size="mini" type="text" icon="el-icon-zoom-in" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

@@ -102,7 +102,7 @@
       <right-toolbar :show-search.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table v-loading="loading" :data="configList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="configList" class="tech-table" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="参数主键" align="center" prop="configId" />
       <el-table-column label="参数名称" align="center" prop="configName" :show-overflow-tooltip="true" />

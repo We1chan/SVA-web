@@ -104,18 +104,18 @@
         </el-col>
       </el-row>
 
-      <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange">
+      <el-table v-loading="loading" class="tech-table" :data="deviceList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column label="设备编码" prop="ape_id" align="center" :show-overflow-tooltip="true" />
         <el-table-column label="设备名称" prop="name" align="center" :show-overflow-tooltip="true" />
         <el-table-column label="接入类型" prop="device_type" align="center" width="110">
           <template slot-scope="scope">
-            <el-tag size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
+            <el-tag class="tech-status" size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="媒体源" prop="stream_source_type" align="center">
           <template slot-scope="scope">
-            <el-tag size="mini" :type="scope.row.stream_source_type === 'PLATFORM' ? 'success' : 'info'">
+            <el-tag class="tech-status" size="mini" :type="scope.row.stream_source_type === 'PLATFORM' ? 'success' : 'info'">
               {{ formatSourceType(scope.row.stream_source_type) }}
             </el-tag>
           </template>
@@ -133,7 +133,7 @@
         </el-table-column>
         <el-table-column label="视频状态" prop="monitor_status" align="center" width="100">
           <template slot-scope="scope">
-            <el-tag size="mini" :type="formatMonitorStatusTag(scope.row.monitor_status)">
+            <el-tag class="tech-status" size="mini" :type="formatMonitorStatusTag(scope.row.monitor_status)">
               {{ renderMonitorStatus(scope.row.monitor_status) }}
             </el-tag>
           </template>
@@ -142,6 +142,7 @@
           <template slot-scope="scope">
             <el-button
               v-hasPermi="['waring:device:start']"
+              class="tech-table-action"
               size="mini"
               type="text"
               icon="el-icon-video-play"
@@ -149,6 +150,7 @@
             >启动视频源</el-button>
             <el-button
               v-hasPermi="['waring:device:stop']"
+              class="tech-table-action"
               size="mini"
               type="text"
               icon="el-icon-video-pause"
@@ -156,6 +158,7 @@
             >停止视频源</el-button>
             <el-button
               v-hasPermi="['waring:device:query']"
+              class="tech-table-action"
               size="mini"
               type="text"
               icon="el-icon-video-camera"
@@ -163,6 +166,7 @@
             >预览视频</el-button>
             <el-button
               v-hasPermi="['waring:device:history']"
+              class="tech-table-action"
               size="mini"
               type="text"
               icon="el-icon-zoom-in"
@@ -170,6 +174,7 @@
             >历史报警</el-button>
             <el-button
               v-hasPermi="['waring:device:edit']"
+              class="tech-table-action"
               size="mini"
               type="text"
               icon="el-icon-edit"
@@ -177,6 +182,7 @@
             >修改</el-button>
             <el-button
               v-hasPermi="['waring:device:remove']"
+              class="tech-table-action"
               size="mini"
               type="text"
               icon="el-icon-delete"

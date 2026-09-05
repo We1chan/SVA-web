@@ -17,7 +17,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="warningTypeList">
+    <el-table v-loading="loading" :data="warningTypeList" class="tech-table">
       <el-table-column type="selection" width="55" />
       <el-table-column label="序号" type="index" width="55" align="center" />
 

@@ -15,6 +15,7 @@
           <el-table
             v-loading="loading"
             :data="cacheNames"
+            class="tech-table"
             :height="tableHeight"
             highlight-current-row
             style="width: 100%"
@@ -73,6 +74,7 @@
           <el-table
             v-loading="subLoading"
             :data="cacheKeys"
+            class="tech-table"
             :height="tableHeight"
             highlight-current-row
             style="width: 100%"

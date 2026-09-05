@@ -69,7 +69,7 @@
       <right-toolbar :show-search.sync="showSearch" @queryTable="getList" />
     </el-row>
 
-    <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="noticeList" class="tech-table" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="noticeId" width="100" />
       <el-table-column

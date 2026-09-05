@@ -137,7 +137,7 @@
           <right-toolbar :show-search.sync="showSearch" :columns="columns" @queryTable="getList" />
         </el-row>
 
-        <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" :data="userList" class="tech-table" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column v-if="columns[0].visible" key="userId" label="用户编号" align="center" prop="userId" />
           <el-table-column v-if="columns[1].visible" key="userName" label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" />

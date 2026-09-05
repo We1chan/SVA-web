@@ -56,6 +56,7 @@
       row-key="deptId"
       :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      class="tech-table"
     >
       <el-table-column prop="deptName" label="组织名称" width="260" />
       <el-table-column prop="orderNum" label="排序" width="200" />

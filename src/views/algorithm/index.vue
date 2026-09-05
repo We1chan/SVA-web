@@ -81,7 +81,7 @@
         <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
       </el-row> -->
 
-    <el-table v-loading="loading" :data="taskList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" class="tech-table" :data="taskList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" prop="id" width="120" />
       <el-table-column label="解析类型" prop="type" :show-overflow-tooltip="true" width="150" />

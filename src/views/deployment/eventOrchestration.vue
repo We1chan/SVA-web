@@ -28,7 +28,7 @@
 
     <el-card shadow="never" class="content-card">
       <div slot="header" class="card-header">已配置编排规则</div>
-      <el-table v-loading="ruleLoading" :data="orchestrationList" empty-text="暂无编排规则">
+      <el-table v-loading="ruleLoading" :data="orchestrationList" empty-text="暂无编排规则" class="tech-table">
         <el-table-column label="名称" prop="name" min-width="180" />
         <el-table-column label="状态" width="100" align="center">
           <template slot-scope="scope">

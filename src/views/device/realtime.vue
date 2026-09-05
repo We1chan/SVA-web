@@ -42,14 +42,14 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="deviceList" style="width: 100%">
+    <el-table v-loading="loading" class="tech-table" :data="deviceList" style="width: 100%">
       <el-table-column label="设备名称" prop="name" align="center" :show-overflow-tooltip="true" />
       <el-table-column label="设备编码" prop="ape_id" align="center" :show-overflow-tooltip="true" />
       <el-table-column label="IP地址" prop="ip_addr" align="center" :show-overflow-tooltip="true" />
       <el-table-column label="端口号" prop="port" align="center" />
       <el-table-column label="接入类型" prop="device_type" align="center" width="110">
         <template slot-scope="scope">
-          <el-tag size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
+          <el-tag class="tech-status" size="mini" :type="formatDeviceTypeTag(scope.row.device_type)">{{ formatDeviceType(scope.row.device_type) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="设备类型" prop="sub_type" align="center">
@@ -70,12 +70,13 @@
       </el-table-column>
       <el-table-column label="监控状态" align="center">
         <template slot-scope="scope">
-          <el-tag size="mini" :type="monitorStatusType(scope.row)">{{ monitorStatusText(scope.row) }}</el-tag>
+          <el-tag class="tech-status" size="mini" :type="monitorStatusType(scope.row)">{{ monitorStatusText(scope.row) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width operation-column" width="310">
         <template slot-scope="scope">
           <el-button
+            class="tech-table-action"
             size="mini"
             type="text"
             icon="el-icon-video-play"
@@ -83,6 +84,7 @@
             @click="handleStart(scope.row)"
           >启动监控</el-button>
           <el-button
+            class="tech-table-action"
             size="mini"
             type="text"
             icon="el-icon-video-pause"
@@ -90,12 +92,14 @@
             @click="handleStop(scope.row)"
           >停止监控</el-button>
           <el-button
+            class="tech-table-action"
             size="mini"
             type="text"
             icon="el-icon-video-camera"
             @click="handlePreview(scope.row)"
           >预览视频</el-button>
           <el-button
+            class="tech-table-action"
             size="mini"
             type="text"
             icon="el-icon-plus"
