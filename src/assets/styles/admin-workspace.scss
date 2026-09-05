@@ -298,6 +298,158 @@
   animation: sva-table-status-pulse 2.8s ease-in-out infinite;
 }
 
+// 多彩信号色：保持浅色底，但让状态和操作在信息密集的表格里快速可辨。
+.sva-workspace .tech-tone-cyan,
+.sva-workspace .tech-status.el-tag--primary,
+.sva-workspace .tech-status.el-tag--info {
+  --tech-tone: #118eae;
+  --tech-tone-soft: rgba(207, 243, 247, 0.9);
+  --tech-tone-glow: rgba(31, 175, 196, 0.28);
+}
+
+.sva-workspace .tech-tone-mint,
+.sva-workspace .tech-status.el-tag--success,
+.sva-workspace .tech-status.status-success {
+  --tech-tone: #128d6e;
+  --tech-tone-soft: rgba(211, 247, 233, 0.92);
+  --tech-tone-glow: rgba(35, 181, 138, 0.26);
+}
+
+.sva-workspace .tech-tone-violet,
+.sva-workspace .tech-status.el-tag--default {
+  --tech-tone: #675ac7;
+  --tech-tone-soft: rgba(232, 229, 255, 0.94);
+  --tech-tone-glow: rgba(111, 96, 213, 0.25);
+}
+
+.sva-workspace .tech-tone-amber,
+.sva-workspace .tech-status.el-tag--warning,
+.sva-workspace .tech-status.status-warning {
+  --tech-tone: #b87512;
+  --tech-tone-soft: rgba(255, 242, 208, 0.95);
+  --tech-tone-glow: rgba(230, 161, 42, 0.28);
+}
+
+.sva-workspace .tech-tone-coral,
+.sva-workspace .tech-status.el-tag--danger,
+.sva-workspace .tech-status.status-danger {
+  --tech-tone: #c94e61;
+  --tech-tone-soft: rgba(255, 229, 234, 0.94);
+  --tech-tone-glow: rgba(218, 81, 105, 0.25);
+}
+
+.sva-workspace .tech-status.el-tag--info,
+.sva-workspace .tech-status.el-tag--primary {
+  color: #118eae !important;
+  border-color: rgba(17, 142, 174, 0.6) !important;
+  background: rgba(207, 243, 247, 0.9) !important;
+}
+
+.sva-workspace .tech-status.el-tag--success {
+  color: #128d6e !important;
+  border-color: rgba(18, 141, 110, 0.6) !important;
+  background: rgba(211, 247, 233, 0.92) !important;
+}
+
+.sva-workspace .tech-status.el-tag--warning {
+  color: #b87512 !important;
+  border-color: rgba(184, 117, 18, 0.62) !important;
+  background: rgba(255, 242, 208, 0.95) !important;
+}
+
+.sva-workspace .tech-status.el-tag--danger {
+  color: #c94e61 !important;
+  border-color: rgba(201, 78, 97, 0.6) !important;
+  background: rgba(255, 229, 234, 0.94) !important;
+}
+
+.sva-workspace .tech-tone-cyan,
+.sva-workspace .tech-tone-mint,
+.sva-workspace .tech-tone-violet,
+.sva-workspace .tech-tone-amber,
+.sva-workspace .tech-tone-coral {
+  border-color: color-mix(in srgb, var(--tech-tone) 56%, transparent);
+  color: var(--tech-tone);
+}
+
+.sva-workspace .tech-tone-cyan::before,
+.sva-workspace .tech-tone-mint::before,
+.sva-workspace .tech-tone-violet::before,
+.sva-workspace .tech-tone-amber::before,
+.sva-workspace .tech-tone-coral::before {
+  background: currentColor;
+  box-shadow: 0 0 9px var(--tech-tone);
+}
+
+.sva-workspace .tech-table-action.el-button--primary,
+.sva-workspace .tech-table-action.tech-tone-cyan,
+.sva-workspace .tech-table-action.tech-tone-mint,
+.sva-workspace .tech-table-action.tech-tone-violet,
+.sva-workspace .tech-table-action.tech-tone-amber,
+.sva-workspace .tech-table-action.tech-tone-coral,
+.sva-workspace .tech-table-action.el-button--success,
+.sva-workspace .tech-table-action.el-button--warning,
+.sva-workspace .tech-table-action.el-button--danger,
+.sva-workspace .tech-table-action.el-button--info {
+  border-color: color-mix(in srgb, var(--tech-tone, #1687a1) 56%, transparent);
+  color: var(--tech-tone, #1687a1);
+}
+
+.sva-workspace .tech-table-action.el-button--success {
+  --tech-tone: #128d6e;
+}
+
+.sva-workspace .tech-table-action.el-button--warning {
+  --tech-tone: #b87512;
+}
+
+.sva-workspace .tech-table-action.el-button--danger {
+  --tech-tone: #c94e61;
+}
+
+.sva-workspace .tech-table-action.el-button--info {
+  --tech-tone: #675ac7;
+}
+
+.sva-workspace .operation-column .cell > .tech-table-action:nth-child(5n + 1) {
+  --tech-tone: #118eae;
+}
+
+.sva-workspace .operation-column .cell > .tech-table-action:nth-child(5n + 2) {
+  --tech-tone: #675ac7;
+}
+
+.sva-workspace .operation-column .cell > .tech-table-action:nth-child(5n + 3) {
+  --tech-tone: #b87512;
+}
+
+.sva-workspace .operation-column .cell > .tech-table-action:nth-child(5n + 4) {
+  --tech-tone: #128d6e;
+}
+
+.sva-workspace .operation-column .cell > .tech-table-action:nth-child(5n) {
+  --tech-tone: #c94e61;
+}
+
+.sva-workspace .tech-table-action:hover,
+.sva-workspace .tech-table-action:focus-visible {
+  border-color: color-mix(in srgb, var(--tech-tone, #1687a1) 76%, transparent);
+  background: color-mix(in srgb, var(--tech-tone, #1687a1) 14%, white);
+  box-shadow: 0 0 13px color-mix(in srgb, var(--tech-tone, #1687a1) 30%, transparent);
+  color: var(--tech-tone, #1687a1);
+}
+
+.sva-workspace .el-button.tech-table-action {
+  border-color: var(--tech-tone, #1687a1) !important;
+  color: var(--tech-tone, #1687a1) !important;
+}
+
+.sva-workspace .el-button.tech-table-action:hover,
+.sva-workspace .el-button.tech-table-action:focus-visible {
+  background: var(--tech-tone-soft, rgba(207, 243, 247, 0.9)) !important;
+  box-shadow: 0 0 13px var(--tech-tone-glow, rgba(31, 175, 196, 0.28)) !important;
+}
+
 .sva-workspace .tech-status::before {
   width: 6px;
   height: 6px;
