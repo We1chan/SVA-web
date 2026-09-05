@@ -498,12 +498,47 @@
 }
 
 .sva-workspace .operation-column .cell,
-.sva-workspace .table-operation {
+.sva-workspace .table-operation,
+.sva-workspace .el-table__body td:has(.tech-table-action) .cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 4px 8px;
+  flex-wrap: nowrap;
+  gap: 4px 6px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  white-space: nowrap;
+  scrollbar-color: rgba(36, 157, 181, 0.48) transparent;
+  scrollbar-width: thin;
+}
+
+.sva-workspace .operation-column .cell::-webkit-scrollbar,
+.sva-workspace .table-operation::-webkit-scrollbar,
+.sva-workspace .el-table__body td:has(.tech-table-action) .cell::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+.sva-workspace .operation-column .cell,
+.sva-workspace .table-operation,
+.sva-workspace .el-table__body td:has(.tech-table-action) .cell {
+  scrollbar-width: none;
+}
+
+.sva-workspace .operation-column,
+.sva-workspace td.operation-column,
+.sva-workspace th.operation-column,
+.sva-workspace .el-table__body td:has(.tech-table-action) {
+  min-width: 360px;
+}
+
+.sva-workspace .operation-column .cell > .tech-table-action,
+.sva-workspace .table-operation > .tech-table-action,
+.sva-workspace .el-table__body td:has(.tech-table-action) .cell > .tech-table-action {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 @keyframes sva-table-scan {
