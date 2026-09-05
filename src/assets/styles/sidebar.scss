@@ -15,7 +15,7 @@
     -webkit-transition: width .28s;
     transition: width 0.28s;
     width: $base-sidebar-width !important;
-    background-color: $base-menu-background;
+    background: linear-gradient(165deg, #122b49 0%, #0b213a 52%, #07182d 100%);
     height: 100%;
     position: fixed;
     font-size: 0px;
@@ -26,6 +26,29 @@
     overflow: hidden;
     -webkit-box-shadow: 2px 0 6px rgba(0,21,41,.35);
     box-shadow: 2px 0 6px rgba(0,21,41,.35);
+
+    &::before {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background-image: linear-gradient(rgba(87, 216, 255, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(87, 216, 255, .035) 1px, transparent 1px);
+      background-size: 24px 24px;
+      content: '';
+      pointer-events: none;
+    }
+
+    &::after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, #57d8ff, transparent);
+      box-shadow: 0 0 12px rgba(87, 216, 255, .7);
+      content: '';
+      animation: sidebarScan 5s ease-in-out infinite;
+      pointer-events: none;
+    }
 
     // reset element-ui css
     .horizontal-collapse-transition {
@@ -68,21 +91,49 @@
       border: none;
       height: 100%;
       width: 100% !important;
+      background: transparent !important;
+      padding: 10px 8px 24px;
     }
 
     .el-menu-item, .el-submenu__title {
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
+      margin: 4px 0;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      transition: color .25s ease, background .25s ease, border-color .25s ease, transform .25s ease, box-shadow .25s ease;
     }
 
     // menu hover
     .submenu-title-noDropdown,
     .el-submenu__title {
       &:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+        background: linear-gradient(90deg, rgba(87, 216, 255, .16), rgba(87, 216, 255, .035)) !important;
+        border-color: rgba(87, 216, 255, .22);
+        color: #ecfbff !important;
+        transform: translateX(2px);
+        box-shadow: inset 3px 0 0 rgba(87, 216, 255, .7), 0 0 14px rgba(87, 216, 255, .08);
       }
     }
+
+    .el-menu-item.is-active,
+    .el-submenu.is-active > .el-submenu__title {
+      background: linear-gradient(90deg, rgba(47, 107, 255, .8), rgba(0, 180, 255, .22)) !important;
+      border-color: rgba(87, 216, 255, .45);
+      color: #fff !important;
+      box-shadow: inset 3px 0 0 #57d8ff, 0 0 18px rgba(47, 107, 255, .2);
+    }
+
+    .el-submenu .el-menu {
+      height: auto;
+      padding: 2px 0 4px 10px;
+      background: rgba(2, 14, 29, .24) !important;
+      border-left: 1px solid rgba(87, 216, 255, .18);
+    }
+
+    .svg-icon { filter: drop-shadow(0 0 4px rgba(87, 216, 255, .15)); transition: filter .25s ease, transform .25s ease; }
+    .el-menu-item:hover .svg-icon, .el-submenu__title:hover .svg-icon, .el-menu-item.is-active .svg-icon { filter: drop-shadow(0 0 7px rgba(87, 216, 255, .72)); transform: scale(1.08); }
 
     & .theme-dark .is-active > .el-submenu__title {
       color: $base-menu-color-active !important;
@@ -224,4 +275,9 @@
       border-radius: 20px;
     }
   }
+}
+
+@keyframes sidebarScan {
+  0%, 100% { opacity: .35; transform: translateY(-10%); }
+  50% { opacity: 1; transform: translateY(10%); }
 }

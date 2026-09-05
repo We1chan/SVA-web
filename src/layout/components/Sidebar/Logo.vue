@@ -58,8 +58,23 @@ export default {
   height: 50px;
   line-height: 50px;
   background: #2b2f3a;
+  background: linear-gradient(135deg, #153b60 0%, #0b213b 100%);
+  border-bottom: 1px solid rgba(87, 216, 255, .24);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .18);
   text-align: center;
   overflow: hidden;
+
+  &::after {
+    position: absolute;
+    right: -20%;
+    bottom: -28px;
+    width: 80%;
+    height: 50px;
+    background: rgba(87, 216, 255, .16);
+    filter: blur(18px);
+    content: '';
+    pointer-events: none;
+  }
 
   & .sidebar-logo-link {
     height: 100%;
@@ -80,6 +95,7 @@ export default {
       font-weight: 600;
       line-height: 50px;
       font-size: 14px;
+      text-shadow: 0 0 9px rgba(87, 216, 255, .28);
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }
