@@ -73,4 +73,9 @@ describe('toBrowserPlayableUrl', () => {
     expect(toBrowserPlayableUrl('rtsp://127.0.0.1:9994/live/camera', httpLocation))
       .toBe('rtsp://127.0.0.1:9994/live/camera')
   })
+
+  it('proxies remote GB28181 FLV urls through the same-origin GB media route', () => {
+    expect(toBrowserPlayableUrl('http://172.24.82.42:9996/rtp/camera.live.flv', httpLocation))
+      .toBe('http://localhost/gb-media/rtp/camera.live.flv')
+  })
 })

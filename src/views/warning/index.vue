@@ -154,8 +154,8 @@
             <div class="block">
               <el-image
                 v-if="detailsInfo.picture_absolute_url"
-                :src="detailsInfo.picture_absolute_url"
-                :preview-src-list="[detailsInfo.picture_absolute_url]"
+                :src="toAbsoluteMediaUrl(detailsInfo.picture_absolute_url)"
+                :preview-src-list="[toAbsoluteMediaUrl(detailsInfo.picture_absolute_url)]"
               >
                 <div slot="error" class="snapshot-placeholder">
                   <i class="el-icon-picture-outline snapshot-placeholder-icon" />
@@ -292,6 +292,7 @@ import {
 import { getDeptList } from '@/api/system/kanban'
 import player from '@/components/RTSPPlayer'
 import store from '@/store'
+import { toBrowserPlayableUrl } from '@/utils/media-url'
 
 const formatDateLocal = (date) => {
   const d = date instanceof Date ? date : new Date(date)
@@ -357,6 +358,7 @@ export default {
         h_remark: ''
       },
       solveSubmitting: false,
+      alarmPushTimer: null,
       solveRules: {
         h_title: [
           { required: true, message: '请选择处理方式', trigger: 'blur' }
@@ -437,6 +439,7 @@ export default {
   },
 
   mounted() {
+    window.addEventListener('sva:alarm-push', this.handleAlarmPush)
     this.fetchQueryOptionData()
     this.$nextTick(() => {
       if (this.deviceContainer && this.deviceContainer.parentNode) {
@@ -445,7 +448,18 @@ export default {
     })
     this.solveRouterQuery()
   },
+  beforeDestroy() {
+    window.removeEventListener('sva:alarm-push', this.handleAlarmPush)
+    if (this.alarmPushTimer) clearTimeout(this.alarmPushTimer)
+  },
   methods: {
+    handleAlarmPush() {
+      if (this.alarmPushTimer) return
+      this.alarmPushTimer = setTimeout(() => {
+        this.alarmPushTimer = null
+        this.fetchData()
+      }, 400)
+    },
     solveRouterQuery() {
       this.querySpecificParamsWatch = false
       this.dateRangeWatch = false
@@ -716,9 +730,8 @@ export default {
     // 查看视频证据
     toAbsoluteMediaUrl(path) {
       if (!path) return ''
-      if (/^https?:\/\//i.test(path)) return path
-      if (path.startsWith('/')) return `${window.location.origin}${path}`
-      return `${window.location.origin}/${path}`
+      const absolute = /^https?:\/\//i.test(path) ? path : (path.startsWith('/') ? `${window.location.origin}${path}` : `${window.location.origin}/${path}`)
+      return toBrowserPlayableUrl(absolute)
     },
 
     resolveVideoMediaUrl(row) {

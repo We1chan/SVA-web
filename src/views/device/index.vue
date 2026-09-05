@@ -161,7 +161,7 @@ export default {
     })
     const isOnline = this.$route.query.isOnline
     if (isOnline) this.queryParams.is_online = isOnline
-    else this.fetchDeviceList()
+    this.fetchDeviceList()
   },
 
   methods: {

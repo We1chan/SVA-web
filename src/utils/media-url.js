@@ -47,10 +47,12 @@ export function toBrowserPlayableUrl(url, locationLike) {
   }
 }
 
-// Match the advertised authority explicitly, not every private IP or port 9996:
-// an unrelated media server may not be reachable through this site's GB proxy.
+// GB28181's dedicated ZLM is exposed through nginx on port 9996. WVP may
+// advertise its private address, which is not reachable from the browser.
 function matchesGbMediaOrigin(parsed, configuredOrigin) {
-  if (!configuredOrigin) return false
+  if (!configuredOrigin) {
+    return parsed.port === '9996' && /^\/rtp\//i.test(parsed.pathname)
+  }
   try {
     const expected = new URL(configuredOrigin)
     const httpOrigin = url => url.origin.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:')

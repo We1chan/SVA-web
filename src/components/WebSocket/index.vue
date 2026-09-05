@@ -68,7 +68,9 @@ export default {
       showMessage: {},
       websocket: null, // WebSocket对象
       reconnectInterval: 3000, // 重连间隔时间（毫秒）
-      heartbeatInterval: null // 心跳定时器
+      heartbeatInterval: null, // 心跳定时器
+      reconnectTimer: null,
+      destroyed: false
     }
   },
 
@@ -84,6 +86,7 @@ export default {
   },
 
   beforeDestroy() {
+    this.destroyed = true
     this.closeWebSocket()
   },
   methods: {
@@ -95,6 +98,7 @@ export default {
     },
 
     setupWebSocket() {
+      if (this.destroyed) return
       this.websocket = new WebSocket(this.getWebSocketUrl())
       this.websocket.onopen = this.onWebSocketOpen
       this.websocket.onmessage = this.onWebSocketMessage
@@ -154,7 +158,12 @@ export default {
     onWebSocketClose() {
       console.log('WebSocket 连接关闭！')
       this.stopHeartbeat()
-      setTimeout(this.setupWebSocket, this.reconnectInterval)
+      if (!this.destroyed) {
+        this.reconnectTimer = setTimeout(() => {
+          this.reconnectTimer = null
+          this.setupWebSocket()
+        }, this.reconnectInterval)
+      }
     },
 
     sendMessage(message) {
@@ -164,6 +173,7 @@ export default {
     },
 
     startHeartbeat() {
+      this.stopHeartbeat()
       this.heartbeatInterval = setInterval(() => {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
           this.websocket.send('ping')
@@ -174,7 +184,9 @@ export default {
     stopHeartbeat() {
       if (this.heartbeatInterval) {
         clearInterval(this.heartbeatInterval) // 停止心跳检测定时器
+        this.heartbeatInterval = null
       }
+      if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null }
     }
   }
 }
