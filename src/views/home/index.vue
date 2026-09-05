@@ -3,7 +3,10 @@
     <!-- 操作区：页标题 + 说明 + 组织筛选（仅有权限时渲染） -->
     <div class="sva-filter-bar home-header">
       <div class="home-title">
-        <h2 class="sva-section-title">安全运营驾驶舱</h2>
+        <h2 class="sva-section-title">
+          <span class="home-title-dot"></span>
+          安全运营驾驶舱
+        </h2>
         <p class="home-desc">集中呈现本月报警运营态势、趋势分布与挂牌公示，辅助快速研判与处置。</p>
       </div>
       <el-select
@@ -32,7 +35,10 @@
       </div>
 
       <div class="home-right sva-panel">
-        <div class="sva-section-title">报警挂牌公示</div>
+        <div class="sva-section-title home-right-title">
+          <span class="home-title-dot"></span>
+          报警挂牌公示
+        </div>
         <div class="home-right-body">
           <div v-if="loading" class="home-state">公示加载中…</div>
           <div v-else-if="error" class="home-state home-error">
@@ -177,20 +183,40 @@ export default {
   height: auto;
   margin: 0 auto;
   overflow: hidden;
-  // 浅色画布背景由页面根节点类设置，不再修改父 DOM 样式
-  background-color: var(--sva-canvas, #f3f6f6);
+  background:
+    radial-gradient(ellipse at top left, rgba(47, 107, 255, 0.06), transparent 55%),
+    radial-gradient(ellipse at top right, rgba(0, 180, 255, 0.05), transparent 55%),
+    var(--sva-canvas, #f3f6f6);
+  padding: 4px 0;
+}
+
+// 标题左侧渐变圆点 + 微光
+.home-title-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 10px;
+  vertical-align: middle;
+  background: linear-gradient(135deg, #2f6bff 0%, #00b4ff 100%);
+  box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12),
+              0 4px 12px rgba(47, 107, 255, 0.35);
+  position: relative;
+  top: -2px;
 }
 
 .home-header {
   align-items: flex-end;
+  padding: 4px 4px 16px !important;
 }
 
 .home-title {
   .home-desc {
-    margin: 6px 0 0;
+    margin: 8px 0 0;
     color: var(--sva-muted, #647874);
     font-size: 13px;
     line-height: 20px;
+    padding-left: 20px;
   }
 }
 
@@ -215,10 +241,31 @@ export default {
     display: flex;
     flex-direction: column;
     width: 30%;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid var(--sva-border, #e5ecf3);
+    box-shadow: 0 8px 24px rgba(35, 73, 137, 0.05);
+    transition: all 0.3s ease;
+    padding: 18px 4px 4px;
+
+    &:hover {
+      box-shadow: 0 12px 32px rgba(35, 73, 137, 0.10);
+      border-color: rgba(47, 107, 255, 0.25);
+    }
+
+    .home-right-title {
+      padding: 0 16px 14px;
+      font-size: 17px !important;
+      font-weight: 600 !important;
+      color: var(--sva-ink, #1f2d3d);
+      display: flex;
+      align-items: center;
+    }
 
     .home-right-body {
       flex: 1;
       min-height: 0;
+      padding: 0 4px 8px;
     }
   }
 }
@@ -271,25 +318,30 @@ export default {
 }
 
 /deep/ .announcement-grid.tiny-grid__border {
-  --ti-grid-border-color: var(--sva-border, #dfe8e5);
+  --ti-grid-border-color: var(--sva-border, #e5ecf3);
 }
 
 /deep/ .announcement-grid .tiny-grid-header__column {
-  height: 46px;
-  color: var(--sva-ink, #18332f);
-  font-weight: 500;
+  height: 42px;
+  color: var(--sva-ink, #1f2d3d);
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  background-color: #eef3f2;
+  background: linear-gradient(180deg, #f5f9ff 0%, #ecf2fb 100%);
 }
 
 /deep/ .announcement-grid .tiny-grid-body__column {
-  height: 46px;
-  color: var(--sva-ink, #18332f);
+  height: 42px;
+  color: var(--sva-ink, #1f2d3d);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   background-color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+/deep/ .announcement-grid .tiny-grid-body__row:hover .tiny-grid-body__column {
+  background-color: #f0f6ff !important;
 }
 </style>
