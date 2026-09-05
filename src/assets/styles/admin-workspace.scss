@@ -13,6 +13,15 @@
   --sva-border: #dfe8e5;
   --sva-accent: var(--current-color, #16806a);
 
+  // 方案 C：加深浅色科技表格层级
+  --sva-table-surface: rgba(248, 252, 253, 0.98);
+  --sva-table-header: linear-gradient(135deg, #d7edf2 0%, #e5f2f5 52%, #cfe8ee 100%);
+  --sva-table-border: rgba(41, 157, 175, 0.32);
+  --sva-table-line: rgba(47, 176, 194, 0.18);
+  --sva-table-glow: rgba(38, 174, 190, 0.26);
+  --sva-table-ink: #183d4a;
+  --sva-table-muted: #66808a;
+
   // 画布底色统一
   background-color: var(--sva-canvas);
   color: var(--sva-ink);
@@ -53,9 +62,171 @@
 // 表头：统一底色与层次
 .sva-workspace {
   .el-table {
-    border: 1px solid var(--sva-border);
-    border-radius: 8px;
+    position: relative;
+    border: 1px solid var(--sva-table-border);
+    border-radius: 10px;
+    background:
+      linear-gradient(var(--sva-table-surface), var(--sva-table-surface)) padding-box,
+      linear-gradient(135deg, rgba(43, 178, 194, 0.55), rgba(255, 255, 255, 0.72), rgba(33, 135, 164, 0.3)) border-box;
+    box-shadow: 0 10px 24px rgba(24, 81, 95, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     overflow: hidden;
+  }
+
+  .el-table::before {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    left: -35%;
+    width: 35%;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, rgba(45, 200, 218, 0.95), transparent);
+    box-shadow: 0 0 12px rgba(45, 200, 218, 0.55);
+    content: '';
+    pointer-events: none;
+    animation: sva-table-scan 5.6s linear infinite;
+  }
+
+  .el-table__header-wrapper,
+  .el-table__fixed-header-wrapper {
+    position: relative;
+    z-index: 1;
+    background: var(--sva-table-header);
+    box-shadow: inset 0 -1px 0 rgba(36, 151, 174, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  }
+
+  .el-table__header-wrapper th.el-table__cell,
+  .el-table__fixed-header-wrapper th.el-table__cell {
+    position: relative;
+    height: 48px;
+    background: transparent;
+    color: var(--sva-table-ink);
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .el-table__header-wrapper th.el-table__cell::after,
+  .el-table__fixed-header-wrapper th.el-table__cell::after {
+    position: absolute;
+    right: 0;
+    bottom: 10px;
+    width: 1px;
+    height: 18px;
+    background: rgba(48, 145, 163, 0.18);
+    content: '';
+  }
+
+  .el-table__body-wrapper,
+  .el-table__fixed-body-wrapper {
+    background: var(--sva-table-surface);
+  }
+
+  .el-table__body tr.el-table__row {
+    position: relative;
+    transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .el-table__body tr.el-table__row > td.el-table__cell {
+    position: relative;
+    background: transparent;
+    border-bottom: 1px solid var(--sva-table-line);
+    color: var(--sva-table-ink);
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+
+  .el-table__body tr.el-table__row:hover {
+    box-shadow: inset 3px 0 0 rgba(35, 177, 195, 0.72), 0 5px 14px rgba(34, 134, 153, 0.08);
+  }
+
+  .el-table__body tr.el-table__row:hover > td.el-table__cell {
+    background: linear-gradient(90deg, rgba(218, 246, 249, 0.98), rgba(239, 249, 251, 0.98));
+    box-shadow: inset 0 -1px 0 var(--sva-table-glow);
+  }
+
+  .el-table__body tr.el-table__row:hover > td.el-table__cell::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(48, 192, 208, 0.75), transparent);
+    content: '';
+    pointer-events: none;
+  }
+
+  .el-table__body tr.current-row > td.el-table__cell,
+  .el-table__body tr.el-table__row--striped.current-row > td.el-table__cell {
+    background: rgba(203, 242, 245, 0.82);
+    box-shadow: inset 3px 0 0 #1ca7b8;
+  }
+
+  .el-table__body tr.el-table__row--striped td.el-table__cell {
+    background: rgba(235, 247, 248, 0.58);
+  }
+
+  .el-table .el-table__fixed,
+  .el-table .el-table__fixed-right {
+    background: var(--sva-table-surface);
+    box-shadow: 6px 0 12px rgba(29, 117, 137, 0.08);
+  }
+
+  .el-table .el-table__fixed-right {
+    box-shadow: -6px 0 12px rgba(29, 117, 137, 0.08);
+  }
+
+  .el-table .el-table__fixed::before,
+  .el-table .el-table__fixed-right::before {
+    background-color: rgba(44, 169, 186, 0.18);
+  }
+
+  .el-table__empty-block {
+    min-height: 112px;
+    background: linear-gradient(180deg, rgba(246, 252, 253, 0.92), rgba(237, 248, 249, 0.72));
+  }
+
+  .el-table__empty-text {
+    color: var(--sva-table-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .el-table__empty-text::before {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(33, 153, 172, 0.62);
+    content: '◇';
+    font-size: 20px;
+    line-height: 20px;
+  }
+
+  .el-table .el-loading-mask {
+    background: rgba(241, 250, 251, 0.76);
+    backdrop-filter: blur(2px);
+  }
+
+  .el-table .el-loading-spinner .circular {
+    stroke: #1ba8bb;
+    filter: drop-shadow(0 0 4px rgba(27, 168, 187, 0.34));
+  }
+
+  .el-table .el-table__body-wrapper::-webkit-scrollbar,
+  .el-table .el-table__fixed-body-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .el-table .el-table__body-wrapper::-webkit-scrollbar-thumb,
+  .el-table .el-table__fixed-body-wrapper::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: rgba(42, 156, 174, 0.34);
+    background-clip: padding-box;
+  }
+
+  .el-table .el-table__body-wrapper::-webkit-scrollbar-thumb:hover,
+  .el-table .el-table__fixed-body-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(28, 157, 179, 0.62);
+    background-clip: padding-box;
   }
 
   .el-table th.el-table__cell {
@@ -85,8 +256,150 @@
   .el-pagination {
     margin-top: 16px;
     padding: 8px 0;
-    color: var(--sva-muted);
+    color: var(--sva-table-muted);
   }
+
+  .el-pagination button,
+  .el-pagination .el-pager li {
+    min-width: 30px;
+    height: 30px;
+    border: 1px solid rgba(43, 157, 176, 0.2);
+    border-radius: 6px;
+    background: rgba(246, 252, 253, 0.76);
+    color: var(--sva-table-muted);
+    line-height: 28px;
+    transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .el-pagination button:hover:not(:disabled),
+  .el-pagination .el-pager li:hover,
+  .el-pagination .el-pager li.active {
+    border-color: rgba(31, 168, 188, 0.56);
+    background: rgba(215, 246, 248, 0.92);
+    color: #1687a1;
+    box-shadow: 0 0 10px rgba(36, 174, 190, 0.16);
+  }
+}
+
+// 状态语义与表格操作的公共钩子，页面可按需叠加到已有组件。
+.sva-workspace .tech-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  color: #1687a1;
+  font-size: 12px;
+  line-height: 22px;
+  white-space: nowrap;
+  animation: sva-table-status-pulse 2.8s ease-in-out infinite;
+}
+
+.sva-workspace .tech-status::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+  content: '';
+}
+
+.sva-workspace .tech-status.is-success,
+.sva-workspace .tech-status.status-success {
+  color: #14966c;
+}
+
+.sva-workspace .tech-status.is-warning,
+.sva-workspace .tech-status.status-warning {
+  color: #c7831a;
+}
+
+.sva-workspace .tech-status.is-danger,
+.sva-workspace .tech-status.status-danger {
+  color: #d35f58;
+}
+
+.sva-workspace .tech-table-action {
+  border-color: rgba(36, 157, 181, 0.46);
+  color: #1687a1;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.sva-workspace .tech-table-action:hover,
+.sva-workspace .tech-table-action:focus-visible {
+  border-color: rgba(30, 164, 185, 0.72);
+  background: rgba(206, 244, 247, 0.84);
+  box-shadow: 0 0 12px rgba(36, 157, 181, 0.22);
+  transform: translateY(-1px);
+}
+
+.sva-workspace .tech-table-action.is-danger:hover,
+.sva-workspace .tech-table-action--danger:hover,
+.sva-workspace .el-button--text.el-button--danger:hover {
+  border-color: rgba(211, 95, 88, 0.48);
+  background: rgba(255, 235, 232, 0.86);
+  box-shadow: 0 0 12px rgba(211, 95, 88, 0.16);
+  color: #c64e47;
+}
+
+.sva-workspace .operation-column .cell,
+.sva-workspace .table-operation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+@keyframes sva-table-scan {
+  0% {
+    left: -35%;
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  72% {
+    opacity: 0.9;
+  }
+
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes sva-table-status-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(36, 174, 190, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 12px rgba(36, 174, 190, 0.12);
+  }
+}
+
+@keyframes sva-table-skeleton {
+  0% {
+    background-position: 120% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+.sva-workspace .tech-table-skeleton,
+.sva-workspace .el-table.is-loading .el-table__body-wrapper {
+  background: linear-gradient(90deg, rgba(237, 248, 249, 0.78) 25%, rgba(216, 242, 245, 0.94) 50%, rgba(237, 248, 249, 0.78) 75%);
+  background-size: 200% 100%;
+  animation: sva-table-skeleton 1.8s ease-in-out infinite;
 }
 
 // =============================================================
