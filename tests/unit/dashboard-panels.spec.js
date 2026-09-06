@@ -6,10 +6,12 @@ import {
 import { shallowMount } from '@vue/test-utils'
 import TotalSummary from '@/views/dping/components/total-summary.vue'
 import WarningGrowth from '@/views/dping/components/warning-growth.vue'
+import WarningSummary from '@/views/dping/components/warning-summary.vue'
 
 jest.mock('@/api/system/kanban', () => ({
   getMonthWaring: jest.fn(() => new Promise(() => {})),
-  getGrowth: jest.fn(() => new Promise(() => {}))
+  getGrowth: jest.fn(() => new Promise(() => {})),
+  getLevelSpread: jest.fn(() => new Promise(() => {}))
 }))
 
 describe('大屏侧栏数据展示契约', () => {
@@ -62,6 +64,37 @@ describe('大屏侧栏数据展示契约', () => {
     const wrapper = shallowMount(WarningGrowth)
 
     expect(wrapper.findAll('.growth-head__metric')).toHaveLength(2)
+    wrapper.destroy()
+  })
+
+  it('renders the completion-rate center and three balanced treatment metrics', async() => {
+    const wrapper = shallowMount(WarningSummary, {
+      mocks: {
+        $router: { push: jest.fn() }
+      }
+    })
+    await wrapper.setData({ treatmentSummary: {
+      total: 47,
+      handled: 11,
+      completionRate: 23,
+      items: [
+        { key: 'pending', name: '未处理', value: 34, percent: 72, color: '#A9E52F' },
+        { key: 'falsePositive', name: '误报', value: 2, percent: 4, color: '#36D7ED' },
+        { key: 'handled', name: '已处理', value: 11, percent: 23, color: '#238CE7' }
+      ]
+    } })
+
+    expect(wrapper.find('.treatment-rate__value').text()).toBe('23%')
+    expect(wrapper.find('.treatment-rate__label').text()).toBe('处理完成率')
+    expect(wrapper.findAll('.treatment-metric')).toHaveLength(3)
+    expect(wrapper.findAll('button.treatment-metric')).toHaveLength(3)
+    expect(wrapper.findAll('.treatment-metric').at(0).text()).toContain('未处理')
+    expect(wrapper.findAll('.treatment-metric').at(0).text()).toContain('34')
+    expect(wrapper.findAll('.treatment-metric').at(0).text()).toContain('72%')
+    expect(wrapper.findAll('.treatment-metric').at(0).attributes('aria-label')).toBe('筛选未处理告警')
+    expect(wrapper.findAll('.treatment-metric').at(0).attributes('data-color')).toBe('#A9E52F')
+    await wrapper.findAll('button.treatment-metric').at(0).trigger('click')
+    expect(wrapper.vm.$router.push).toHaveBeenCalledWith({ path: '/warning/warning', query: { withQue: 2, is_handle: 0 }})
     wrapper.destroy()
   })
 })

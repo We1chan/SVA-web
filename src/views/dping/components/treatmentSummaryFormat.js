@@ -28,3 +28,34 @@ export function buildTreatmentSummary(rows = []) {
     items: normalizedItems
   }
 }
+
+export function buildTreatmentChartOption(items = []) {
+  return {
+    color: items.map(item => item.color),
+    backgroundColor: 'transparent',
+    legend: { show: false },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b} : {c}'
+    },
+    series: [{
+      type: 'pie',
+      center: ['50%', '47%'],
+      radius: ['53%', '71%'],
+      startAngle: 90,
+      avoidLabelOverlap: true,
+      label: { show: false },
+      labelLine: { show: false },
+      animationDuration: 700,
+      data: items.map(item => ({
+        value: item.value,
+        name: item.name,
+        itemStyle: {
+          color: item.color,
+          borderColor: 'rgba(6, 21, 55, .9)',
+          borderWidth: 2
+        }
+      }))
+    }]
+  }
+}

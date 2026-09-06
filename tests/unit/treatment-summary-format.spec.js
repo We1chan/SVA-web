@@ -1,4 +1,7 @@
-import { buildTreatmentSummary } from '@/views/dping/components/treatmentSummaryFormat'
+import {
+  buildTreatmentChartOption,
+  buildTreatmentSummary
+} from '@/views/dping/components/treatmentSummaryFormat'
 
 describe('buildTreatmentSummary', () => {
   it('maps the three treatment states and calculates completion safely', () => {
@@ -46,5 +49,20 @@ describe('buildTreatmentSummary', () => {
         ]
       })
     })
+  })
+
+  it('builds a balanced radar donut option from the normalized state colors', () => {
+    const option = buildTreatmentChartOption(buildTreatmentSummary([
+      { is_handle: '未处理', num: 34 },
+      { is_handle: '误报', num: 2 },
+      { is_handle: '已处理', num: 11 }
+    ]).items)
+
+    expect(option.legend.show).toBe(false)
+    expect(option.series[0].radius).toEqual(['53%', '71%'])
+    expect(option.series[0].center).toEqual(['50%', '47%'])
+    expect(option.series[0].data.map(item => item.itemStyle.color)).toEqual([
+      '#A9E52F', '#36D7ED', '#238CE7'
+    ])
   })
 })
