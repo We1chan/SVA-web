@@ -104,6 +104,65 @@ describe('DeviceManage GB28181 适配', () => {
     wrapper.destroy()
   })
 
+  it('国标离线值 0 显示离线，保留原 RTSP 登录中语义', async () => {
+    const wrapper = createWrapper()
+    await flushAll()
+    expect(wrapper.vm.renderOnline(0, { device_type: 'GB28181' })).toBe('离线')
+    expect(wrapper.vm.renderOnline('1', { stream_source_type: 'GB28181' })).toBe('在线')
+    expect(wrapper.vm.renderOnline(0, { device_type: 'RTSP' })).toBe('登录中')
+    wrapper.destroy()
+  })
+
+  it('后台读取会更新上下线并保留选择的行对象，旧请求不覆盖新查询', async () => {
+    const wrapper = createWrapper()
+    await flushAll()
+    const row = { ape_id: 'gb-test6', is_online: 1, monitor_status: 'RUNNING' }
+    wrapper.vm.deviceList = [row]
+    getDeviceList.mockResolvedValueOnce({ rows: [{ ...row, is_online: 0, monitor_status: 'STOPPED' }], total: 1 })
+    await wrapper.vm.getList(true)
+    expect(wrapper.vm.deviceList[0]).toBe(row)
+    expect(row.is_online).toBe(0)
+    expect(row.monitor_status).toBe('STOPPED')
+    let resolveOld
+    getDeviceList.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve }))
+    const oldRequest = wrapper.vm.getList(true)
+    getDeviceList.mockResolvedValueOnce({ rows: [{ ape_id: 'new-filter' }], total: 1 })
+    await wrapper.vm.getList()
+    resolveOld({ rows: [{ ...row, is_online: 1 }], total: 1 })
+    await oldRequest
+    expect(wrapper.vm.deviceList[0].ape_id).toBe('new-filter')
+    wrapper.destroy()
+  })
+
+  it('自动刷新暂停于编辑和页面停用，失败后不重复请求', async () => {
+    const interval = jest.spyOn(window, 'setInterval')
+    const wrapper = createWrapper()
+    await flushAll()
+    const callback = interval.mock.calls.find(call => call[1] === 4000)[0]
+    getDeviceList.mockClear()
+    wrapper.vm.open = true
+    callback()
+    expect(getDeviceList).not.toHaveBeenCalled()
+    wrapper.vm.open = false
+    callback()
+    await flushAll()
+    expect(getDeviceList).toHaveBeenCalledTimes(1)
+    getDeviceList.mockRejectedValueOnce(new Error('backend unavailable'))
+    callback()
+    await flushAll()
+    callback()
+    expect(getDeviceList).toHaveBeenCalledTimes(2)
+    expect(wrapper.vm.deviceStatusPollFailed).toBe(true)
+    const clear = jest.spyOn(window, 'clearInterval')
+    const timer = wrapper.vm.deviceStatusTimer
+    wrapper.vm.$options.deactivated.forEach(hook => hook.call(wrapper.vm))
+    expect(clear).toHaveBeenCalledWith(timer)
+    expect(wrapper.vm.deviceStatusTimer).toBe(null)
+    wrapper.destroy()
+    clear.mockRestore()
+    interval.mockRestore()
+  })
+
   it('接入类型筛选为 GB28181 时，列表请求携带 device_type=GB28181', async () => {
     const wrapper = createWrapper()
     await flushAll()

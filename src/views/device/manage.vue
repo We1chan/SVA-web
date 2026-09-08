@@ -102,6 +102,9 @@
         <el-col :span="1.5">
           <el-button v-hasPermi="['waring:device:add']" type="info" plain icon="el-icon-refresh" size="mini" :loading="refreshing" :disabled="syncing" @click="handleRefreshGb28181">刷新国标状态</el-button>
         </el-col>
+        <el-col :span="1.5" style="line-height: 32px; color: #64748b; font-size: 12px">
+          {{ deviceStatusPollFailed ? '状态刷新失败，请点击查询重试' : '设备状态每 4 秒自动刷新' }}
+        </el-col>
       </el-row>
 
       <el-table v-loading="loading" class="tech-table" :data="deviceList" @selection-change="handleSelectionChange">
@@ -128,7 +131,10 @@
         <el-table-column label="位置" prop="place" align="center" :show-overflow-tooltip="true" />
         <el-table-column label="在线状态" prop="is_online" align="center">
           <template slot-scope="scope">
-            <span>{{ renderOnline(scope.row.is_online) }}</span>
+            <el-tag v-if="isGbDevice(scope.row)" size="mini" :type="String(scope.row.is_online) === '1' ? 'success' : 'info'">
+              {{ renderOnline(scope.row.is_online, scope.row) }}
+            </el-tag>
+            <span v-else>{{ renderOnline(scope.row.is_online, scope.row) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="视频状态" prop="monitor_status" align="center" width="100">
@@ -422,6 +428,10 @@ export default {
     }
     return {
       loading: false,
+      deviceStatusTimer: null,
+      deviceStatusRequestId: 0,
+      deviceStatusPending: false,
+      deviceStatusPollFailed: false,
       syncing: false,
       refreshing: false,
       total: 0,
@@ -490,18 +500,45 @@ export default {
     this.getList()
   },
   mounted() {
+    this.startDeviceStatusPolling()
     window.addEventListener('mouseup', this.stopPtz)
     window.addEventListener('touchend', this.stopPtz)
     window.addEventListener('blur', this.stopPtz)
   },
   beforeDestroy() {
+    this.stopDeviceStatusPolling()
     window.removeEventListener('mouseup', this.stopPtz)
     window.removeEventListener('touchend', this.stopPtz)
     window.removeEventListener('blur', this.stopPtz)
     this.stopPtz()
     this.clearViewportMoveTimer()
   },
+  activated() {
+    this.startDeviceStatusPolling()
+  },
+  deactivated() {
+    this.stopDeviceStatusPolling()
+  },
   methods: {
+    startDeviceStatusPolling() {
+      if (this.deviceStatusTimer) return
+      this.deviceStatusTimer = window.setInterval(() => {
+        if (document.hidden || !this.deviceListShow || this.open || this.loading ||
+            this.deviceStatusPending || this.syncing || this.refreshing || this.deviceStatusPollFailed) return
+        this.getList(true)
+      }, 4000)
+    },
+    stopDeviceStatusPolling() {
+      window.clearInterval(this.deviceStatusTimer)
+      this.deviceStatusTimer = null
+      this.deviceStatusRequestId += 1
+      this.deviceStatusPending = false
+      this.loading = false
+    },
+    isGbDevice(row) {
+      return !!row && (String(row.device_type).toUpperCase() === 'GB28181' ||
+        String(row.stream_source_type).toUpperCase() === 'GB28181')
+    },
     getDeptTree() {
       deptTreeSelect().then((response) => {
         this.deptOptions = response.data || []
@@ -664,8 +701,13 @@ export default {
         this.refreshing = false
       }
     },
-    renderOnline(value) {
+    renderOnline(value, row) {
       const normalized = String(value)
+      if (this.isGbDevice(row)) {
+        if (normalized === '1') return '在线'
+        if (normalized === '0' || normalized === '2') return '离线'
+        return '未知'
+      }
       const target = this.onlineOptions.find((item) => String(item.value) === normalized)
       return target ? target.label : value
     },
@@ -738,13 +780,32 @@ export default {
         }
       })
     },
-    getList() {
-      this.loading = true
-      getDeviceList(this.queryParams).then((response) => {
-        this.deviceList = response.rows || []
+    getList(background = false) {
+      const requestId = ++this.deviceStatusRequestId
+      this.deviceStatusPending = true
+      if (!background) {
+        this.loading = true
+        this.deviceStatusPollFailed = false
+      }
+      return getDeviceList({ ...this.queryParams }).then((response) => {
+        if (requestId !== this.deviceStatusRequestId) return
+        if (background) {
+          // Keep existing row identities and selected rows during passive polling.
+          // Only foreground queries change table membership or filter/pagination.
+          const latest = new Map((response.rows || []).map(row => [row.ape_id, row]))
+          this.deviceList.forEach(row => {
+            const updated = latest.get(row.ape_id)
+            if (updated) Object.assign(row, updated)
+          })
+        } else {
+          this.deviceList = response.rows || []
+        }
         this.total = response.total || 0
-        this.loading = false
       }).catch(() => {
+        if (requestId === this.deviceStatusRequestId) this.deviceStatusPollFailed = true
+      }).finally(() => {
+        if (requestId !== this.deviceStatusRequestId) return
+        this.deviceStatusPending = false
         this.loading = false
       })
     },
