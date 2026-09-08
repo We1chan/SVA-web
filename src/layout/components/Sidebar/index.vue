@@ -1,6 +1,7 @@
 <template>
   <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground }">
     <logo v-if="showLogo" :collapse="isCollapse" />
+    <div v-if="!isCollapse" class="sidebar-caption">WORKSPACE / 工作空间</div>
     <el-scrollbar :class="settings.sideTheme" wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -20,6 +21,7 @@
         />
       </el-menu>
     </el-scrollbar>
+    <div v-if="!isCollapse" class="sidebar-footer"><i class="el-icon-cpu" /><span>easySVA · 智能感知，安心守护</span></div>
   </div>
 </template>
 

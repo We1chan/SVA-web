@@ -1,5 +1,6 @@
 <template>
   <section class="app-main">
+    <div v-if="$route.path !== '/index'" class="page-heading workspace-page-heading"><div><span class="eyebrow">WORKSPACE</span><h1>{{ $route.meta.title || '工作空间' }}</h1></div></div>
     <transition name="fade-transform" mode="out-in">
       <keep-alive :include="cachedViews">
         <router-view v-if="!$route.meta.link" :key="key" />

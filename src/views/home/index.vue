@@ -1,80 +1,29 @@
 <template>
-  <div class="sva-workspace container-work">
-    <!-- 操作区：页标题 + 说明 + 组织筛选（仅有权限时渲染） -->
-    <div class="sva-filter-bar home-header">
-      <div class="home-title">
-        <h2 class="sva-section-title">
-          <span class="home-title-dot"></span>
-          安全运营驾驶舱
-        </h2>
-        <p class="home-desc">集中呈现本月报警运营态势、趋势分布与挂牌公示，辅助快速研判与处置。</p>
-      </div>
-      <el-select
-        v-if="hasDeptPermission"
-        v-model="orgIndex"
-        class="home-org-select"
-        placeholder="选择组织"
-        clearable
-        @change="onOrgChange"
-      >
-        <el-option
-          v-for="opt in orgOptions"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
+  <div class="overview-page">
+    <div class="page-heading">
+      <div><span class="eyebrow">OVERVIEW / 运营总览</span><h1>每一处安全，都心中有数。</h1><p>从实时感知到事件处置，让安全运营更从容。</p></div>
+      <div class="page-heading-actions"><el-select v-if="hasDeptPermission" v-model="orgIndex" class="home-org-select" placeholder="全部组织" clearable @change="onOrgChange"><el-option v-for="opt in orgOptions" :key="opt.value" :label="opt.label" :value="opt.value" /></el-select><el-button type="primary" icon="el-icon-video-camera" @click="$router.push('/dping')">进入监控中心</el-button></div>
     </div>
-
-    <!-- 响应式网格：桌面左 70% / 右 30%，平板两列，手机单列 -->
-    <div class="home-grid">
-      <div class="home-left">
-        <hazardcount :org-index="orgIndex" />
-        <hazardtrend :org-index="orgIndex" />
-        <hazarddistribution :org-index="orgIndex" />
-      </div>
-
-      <div class="home-right sva-panel">
-        <div class="sva-section-title home-right-title">
-          <span class="home-title-dot"></span>
-          报警挂牌公示
-        </div>
-        <div class="home-right-body">
-          <div v-if="loading" class="home-state">公示加载中…</div>
-          <div v-else-if="error" class="home-state home-error">
-            <span>公示加载失败，请稍后重试</span>
-            <el-button type="primary" size="small" class="home-retry" @click="retry">重试</el-button>
-          </div>
-          <div v-else-if="handleData.length === 0" class="home-state">暂无挂牌公示</div>
-          <tiny-grid
-            v-else
-            class="announcement-grid"
-            :data="handleData"
-            border
-            :edit-config="{ trigger: 'click', mode: 'cell', showStatus: true }"
-            highlight-current-row
-            style="cursor: pointer;"
-            @current-change="handleClick"
-          >
-            <tiny-grid-column field="handleEvent" title="报警事件" min-width="120" />
-            <tiny-grid-column field="handleLoc" title="事件位置" min-width="160" />
-            <tiny-grid-column field="handleOrg" title="处置人" width="90" />
-          </tiny-grid>
-        </div>
-      </div>
+    <div class="overview-banner"><div><span class="banner-label">SAFETY, IN SIGHT.</span><h2>看见风险，先行一步。</h2><p>连接视频、智能分析与告警处置，构建完整的安全视野。</p><router-link to="/dping">打开实时视野 <i class="el-icon-top-right" /></router-link></div><div class="signal-art" aria-hidden="true"><span class="orbit orbit-one" /><span class="orbit orbit-two" /><span class="orbit orbit-three" /><i class="el-icon-view" /><span class="signal-point point-one" /><span class="signal-point point-two" /><span class="signal-caption">INTELLIGENT VISION</span></div></div>
+    <div class="overview-section-label"><h2>本月安全概况</h2><span>月度运营指标</span></div>
+    <hazardcount :org-index="orgIndex" />
+    <div class="overview-lower"><div class="overview-charts"><hazardtrend :org-index="orgIndex" /><hazarddistribution :org-index="orgIndex" /></div>
+      <section class="announcement-panel"><div class="announcement-heading"><div><span class="eyebrow">ACTIVITY</span><h2>报警挂牌公示</h2></div><span class="announcement-count">{{ handleData.length }}</span></div><p class="announcement-intro">关注事件进展，跟进每一次处置。</p>
+        <div v-if="loading" class="home-state"><i class="el-icon-loading" /> 公示加载中…</div>
+        <div v-else-if="error" class="home-state"><i class="el-icon-warning-outline" /><p>公示加载失败</p><el-button class="home-retry" size="small" @click="retry">重新加载</el-button></div>
+        <div v-else-if="handleData.length === 0" class="home-state"><span class="empty-illustration"><i class="el-icon-document-checked" /></span><strong>暂无挂牌公示</strong><p>新的公示会显示在这里</p></div>
+        <div v-else class="announcement-list"><button v-for="(row, index) in handleData" :key="row.id || index" class="announcement-row" @click="handleClick(row)"><span class="event-marker"><i class="el-icon-bell" /></span><span class="event-copy"><strong>{{ row.handleEvent }}</strong><span>{{ row.handleLoc || '未填写位置' }}</span><small>处置人 · {{ row.handleOrg || '待分配' }}</small></span><i class="el-icon-arrow-right" /></button></div>
+        <div class="announcement-foot"><i class="el-icon-info" /> 点击公示查看事件详情</div>
+      </section>
     </div>
+    <footer class="overview-footer"><span>easySVA · 视频安全分析</span><span>让每一次感知，都有意义。</span></footer>
   </div>
 </template>
-
 <script>
 import hazardcount from './components/hazard-count.vue'
 import hazardtrend from './components/hazard-trend.vue'
 import hazarddistribution from './components/hazard-distribution.vue'
 import store from '@/store'
-import {
-  Grid as TinyGrid,
-  GridColumn as TinyGridColumn
-} from '@opentiny/vue'
 import { getDeptList, getHandleData } from '@/api/system/kanban'
 
 const ALL_PERMISSION = '*:*:*'
@@ -83,7 +32,7 @@ const DEPT_PERMISSION = 'getDeptList'
 export default {
   name: 'Index',
   components: {
-    hazardcount, hazardtrend, hazarddistribution, TinyGrid, TinyGridColumn
+    hazardcount, hazardtrend, hazarddistribution
   },
   data() {
     return {
@@ -176,172 +125,6 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="less">
-.container-work {
-  width: 100%;
-  height: auto;
-  margin: 0 auto;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at top left, rgba(47, 107, 255, 0.06), transparent 55%),
-    radial-gradient(ellipse at top right, rgba(0, 180, 255, 0.05), transparent 55%),
-    var(--sva-canvas, #f3f6f6);
-  padding: 4px 0;
-}
-
-// 标题左侧渐变圆点 + 微光
-.home-title-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 10px;
-  vertical-align: middle;
-  background: linear-gradient(135deg, #2f6bff 0%, #00b4ff 100%);
-  box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12),
-              0 4px 12px rgba(47, 107, 255, 0.35);
-  position: relative;
-  top: -2px;
-}
-
-.home-header {
-  align-items: flex-end;
-  padding: 4px 4px 16px !important;
-}
-
-.home-title {
-  .home-desc {
-    margin: 8px 0 0;
-    color: var(--sva-muted, #647874);
-    font-size: 13px;
-    line-height: 20px;
-    padding-left: 20px;
-  }
-}
-
-.home-org-select {
-  width: 200px;
-}
-
-.home-grid {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 16px;
-
-  .home-left {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 70%;
-  }
-
-  .home-right {
-    display: flex;
-    flex-direction: column;
-    width: 30%;
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid var(--sva-border, #e5ecf3);
-    box-shadow: 0 8px 24px rgba(35, 73, 137, 0.05);
-    transition: all 0.3s ease;
-    padding: 18px 4px 4px;
-
-    &:hover {
-      box-shadow: 0 12px 32px rgba(35, 73, 137, 0.10);
-      border-color: rgba(47, 107, 255, 0.25);
-    }
-
-    .home-right-title {
-      padding: 0 16px 14px;
-      font-size: 17px !important;
-      font-weight: 600 !important;
-      color: var(--sva-ink, #1f2d3d);
-      display: flex;
-      align-items: center;
-    }
-
-    .home-right-body {
-      flex: 1;
-      min-height: 0;
-      padding: 0 4px 8px;
-    }
-  }
-}
-
-// 平板：两列布局
-@media (max-width: 1024px) {
-  .home-grid {
-    flex-wrap: wrap;
-
-    .home-left,
-    .home-right {
-      width: 100%;
-    }
-  }
-}
-
-// 手机：单列
-@media (max-width: 768px) {
-  .home-grid {
-    flex-direction: column;
-
-    .home-left,
-    .home-right {
-      width: 100%;
-    }
-  }
-
-  .home-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .home-org-select {
-    width: 100%;
-  }
-}
-
-.home-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  min-height: 200px;
-  color: var(--sva-muted, #647874);
-  font-size: 14px;
-}
-
-.home-error {
-  color: #f56c6c;
-}
-
-/deep/ .announcement-grid.tiny-grid__border {
-  --ti-grid-border-color: var(--sva-border, #e5ecf3);
-}
-
-/deep/ .announcement-grid .tiny-grid-header__column {
-  height: 42px;
-  color: var(--sva-ink, #1f2d3d);
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  background: linear-gradient(180deg, #f5f9ff 0%, #ecf2fb 100%);
-}
-
-/deep/ .announcement-grid .tiny-grid-body__column {
-  height: 42px;
-  color: var(--sva-ink, #1f2d3d);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  background-color: #fff;
-  transition: background-color 0.2s ease;
-}
-
-/deep/ .announcement-grid .tiny-grid-body__row:hover .tiny-grid-body__column {
-  background-color: #f0f6ff !important;
-}
+<style lang="scss">
+@import "./overview.scss";
 </style>

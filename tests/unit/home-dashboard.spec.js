@@ -121,7 +121,7 @@ describe('首页驾驶舱', () => {
   it('有权限时渲染页标题与组织筛选', async () => {
     const wrapper = createWrapper()
     await flushAll()
-    expect(wrapper.text()).toContain('安全运营驾驶舱')
+    expect(wrapper.text()).toContain('运营总览')
     expect(wrapper.find('.home-org-select').exists()).toBe(true)
     wrapper.destroy()
   })

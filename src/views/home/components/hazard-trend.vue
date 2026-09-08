@@ -1,36 +1,37 @@
 <template>
   <div class="ht">
-    <tiny-row :flex="true" justify="space-between" :gutter="16">
+    <div class="insight-grid">
       <!-- 左侧：报警趋势分析 -->
-      <tiny-col :span="13">
+      <div class="insight-slot">
         <div class="ht-card">
           <div class="ht-head">
             <div class="ht-title">
-              <span class="ht-title-bar"></span>
+              <span class="ht-title-bar" />
               <span class="ht-title-text">报警趋势分析</span>
             </div>
             <div class="ht-tabs">
-              <span
+              <button
                 v-for="t in timeOptions"
                 :key="t.label"
+                type="button"
                 class="ht-tab"
                 :class="{ 'ht-tab--active': selectedTime === t.label }"
                 @click="selectTime(t.label)"
-              >{{ t.label }}</span>
+              >{{ t.label }}</button>
             </div>
           </div>
-          <router-link :to="{ path: '/warning/warning', query: { withQue: 8, time: this.selectedTime } }">
+          <router-link :to="{ path: '/warning/warning', query: { withQue: 8, time: selectedTime } }">
             <div ref="trend" class="ht-chart" :style="trendStyle" />
           </router-link>
         </div>
-      </tiny-col>
+      </div>
 
       <!-- 右侧：增长率分析 -->
-      <tiny-col :span="11">
+      <div class="insight-slot">
         <div class="ht-card">
           <div class="ht-head">
             <div class="ht-title">
-              <span class="ht-title-bar ht-title-bar--purple"></span>
+              <span class="ht-title-bar ht-title-bar--purple" />
               <span class="ht-title-text">增长率分析</span>
             </div>
           </div>
@@ -48,7 +49,7 @@
                     class="ht-growth-bar-fill"
                     :class="item.cls"
                     :style="{ width: item.width }"
-                  ></div>
+                  />
                 </div>
                 <div class="ht-growth-value" :class="item.cls">
                   <span class="ht-growth-arrow">{{ item.arrow }}</span>
@@ -69,7 +70,7 @@
                     class="ht-growth-bar-fill"
                     :class="item.cls"
                     :style="{ width: item.width }"
-                  ></div>
+                  />
                 </div>
                 <div class="ht-growth-value" :class="item.cls">
                   <span class="ht-growth-arrow">{{ item.arrow }}</span>
@@ -79,20 +80,16 @@
             </div>
           </div>
         </div>
-      </tiny-col>
-    </tiny-row>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { Col as TinyCol, Layout as TinyLayout, Row as TinyRow } from '@opentiny/vue'
 import { getGrowth, getTrend } from '@/api/system/kanban'
 import { useChart, disposeChart } from '@/utils/dashboard'
 
 export default {
-  components: {
-    TinyLayout, TinyRow, TinyCol
-  },
 
   props: {
     orgIndex: { type: String, default: '' }
@@ -188,8 +185,8 @@ export default {
             const p = params[0]
             return `<div style="font-weight:600;margin-bottom:2px;">${p.name}</div>
                     <div style="display:flex;align-items:center;gap:6px;">
-                      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#2f6bff,#00b4ff);"></span>
-                      <span>报警数：</span><span style="font-weight:600;color:#2f6bff;">${p.value}</span>
+                      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#398773,#9ac2ac);"></span>
+                      <span>报警数：</span><span style="font-weight:600;color:#398773;">${p.value}</span>
                     </div>`
           }
         },
@@ -201,7 +198,7 @@ export default {
           type: 'category',
           boundaryGap: false,
           data: this.chartData.xData,
-          axisLine: { lineStyle: { color: '#e6ecf3' } },
+          axisLine: { lineStyle: { color: '#e6ecf3' }},
           axisTick: { show: false },
           axisLabel: {
             color: '#7c8aa0',
@@ -213,7 +210,7 @@ export default {
           type: 'value',
           axisLine: { show: false },
           axisTick: { show: false },
-          splitLine: { lineStyle: { color: '#eef2f7', type: 'dashed' } },
+          splitLine: { lineStyle: { color: '#eef2f7', type: 'dashed' }},
           axisLabel: {
             color: '#7c8aa0',
             fontSize: 12
@@ -232,8 +229,8 @@ export default {
               color: {
                 type: 'linear', x: 0, y: 0, x2: 1, y2: 0,
                 colorStops: [
-                  { offset: 0, color: '#2f6bff' },
-                  { offset: 1, color: '#00b4ff' }
+                  { offset: 0, color: '#398773' },
+                  { offset: 1, color: '#9ac2ac' }
                 ]
               },
               shadowColor: 'rgba(47, 107, 255, 0.35)',
@@ -241,7 +238,7 @@ export default {
             },
             itemStyle: {
               color: '#fff',
-              borderColor: '#2f6bff',
+              borderColor: '#398773',
               borderWidth: 2,
               shadowColor: 'rgba(47, 107, 255, 0.4)',
               shadowBlur: 6
@@ -249,7 +246,7 @@ export default {
             label: {
               show: true,
               position: 'top',
-              color: '#2f6bff',
+              color: '#398773',
               fontSize: 11,
               fontWeight: 600,
               distance: 6
@@ -284,7 +281,7 @@ export default {
           getGrowth(this.orgIndex)
         ])
 
-        const reset = { week: { xData: [], yData: [] }, month: { xData: [], yData: [] }, quarter: { xData: [], yData: [] }, year: { xData: [], yData: [] } }
+        const reset = { week: { xData: [], yData: [] }, month: { xData: [], yData: [] }, quarter: { xData: [], yData: [] }, year: { xData: [], yData: [] }}
         trendDataRes.data.week.forEach(item => {
           reset.week.xData.push(`${item.weeks}周`)
           reset.week.yData.push(item.total)
@@ -356,11 +353,11 @@ export default {
   width: 4px;
   height: 16px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #2f6bff, #00b4ff);
+  background: linear-gradient(180deg, #398773, #9ac2ac);
   flex-shrink: 0;
 }
 .ht-title-bar--purple {
-  background: linear-gradient(180deg, #8b5cf6, #d946ef);
+  background: linear-gradient(180deg, #849c91, #d946ef);
 }
 
 .ht-title-text {
@@ -393,10 +390,10 @@ export default {
   font-weight: 500;
   white-space: nowrap;
 
-  &:hover { color: #2f6bff; }
+  &:hover { color: #398773; }
 
   &--active {
-    background: linear-gradient(135deg, #2f6bff, #00b4ff);
+    background: linear-gradient(135deg, #398773, #9ac2ac);
     color: #fff;
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(47, 107, 255, 0.4);
@@ -433,7 +430,7 @@ export default {
     display: inline-block;
     width: 3px;
     height: 10px;
-    background: linear-gradient(180deg, #2f6bff, #00b4ff);
+    background: linear-gradient(180deg, #398773, #9ac2ac);
     margin-right: 6px;
     vertical-align: middle;
     border-radius: 2px;
@@ -474,11 +471,11 @@ export default {
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.ht-pos {
-    background: linear-gradient(90deg, #00b4ff, #2f6bff);
+    background: linear-gradient(90deg, #9ac2ac, #398773);
     box-shadow: 0 0 8px rgba(47, 107, 255, 0.4);
   }
   &.ht-neg {
-    background: linear-gradient(90deg, #ff7a18, #f43f5e);
+    background: linear-gradient(90deg, #c5a46c, #f43f5e);
     box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
   }
   &.ht-flat {

@@ -3,7 +3,7 @@ const path = require('path')
 
 describe('shared form model lint contract', () => {
   const cli = new CLIEngine()
-  const filename = path.resolve(__dirname, '../../src/views/tool/gen/basicInfoForm.vue')
+  const filename = path.resolve(__dirname, '../../src/components/RightToolbar/index.vue')
   const lint = body => cli.executeOnText(`<script>\nexport default {\n  props: ['info'],\n  methods: {\n    update() {\n      ${body}\n    }\n  }\n}\n</script>\n`, filename).results[0].messages
 
   it('permits nested editing of the parent-owned shared form', () => {

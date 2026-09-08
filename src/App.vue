@@ -1,18 +1,18 @@
 <template>
   <div id="app">
     <router-view />
-    <theme-picker />
+
     <websocket-component />
   </div>
 </template>
 
 <script>
-import ThemePicker from '@/components/ThemePicker'
+
 import WebsocketComponent from '@/components/WebSocket'
 
 export default {
   name: 'App',
-  components: { ThemePicker, WebsocketComponent },
+  components: { WebsocketComponent },
   metaInfo() {
     return {
       title: this.$store.state.settings.dynamicTitle && this.$store.state.settings.title,

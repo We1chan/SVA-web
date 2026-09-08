@@ -204,10 +204,7 @@ module.exports = {
   overrides: [{
     files: [
       'src/components/RightToolbar/index.vue',
-      'src/views/system/user/profile/userInfo.vue',
-      'src/views/tool/build/RightPanel.vue',
-      'src/views/tool/gen/basicInfoForm.vue',
-      'src/views/tool/gen/genInfoForm.vue'
+      'src/views/system/user/profile/userInfo.vue'
     ],
     rules: {
       'vue/no-mutating-props': 'off',

@@ -1,17 +1,17 @@
 <template>
-  <tiny-layout class="kc">
-    <tiny-row :flex="true" justify="space-between" :gutter="16">
+  <div class="kc">
+    <div class="metric-grid">
       <!-- 本月报警数量 -->
-      <tiny-col :span="8">
+      <div class="insight-slot">
         <router-link :to="{ path: '/warning/warning', query: { withQue: 2 } }">
           <div class="kc-card kc-card--blue">
-            <span class="kc-corner kc-corner--tl"></span>
-            <span class="kc-corner kc-corner--tr"></span>
-            <span class="kc-corner kc-corner--bl"></span>
-            <span class="kc-corner kc-corner--br"></span>
+            <span class="kc-corner kc-corner--tl" />
+            <span class="kc-corner kc-corner--tr" />
+            <span class="kc-corner kc-corner--bl" />
+            <span class="kc-corner kc-corner--br" />
             <div class="kc-head">
               <div class="kc-icon kc-icon--blue">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2 1 21h22L12 2zm1 14h-2v2h2v-2zm0-7h-2v6h2V9z"/></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2 1 21h22L12 2zm1 14h-2v2h2v-2zm0-7h-2v6h2V9z" /></svg>
               </div>
               <span class="kc-title">本月报警数量</span>
             </div>
@@ -41,18 +41,18 @@
             </div>
           </div>
         </router-link>
-      </tiny-col>
+      </div>
 
       <!-- 本月报警处置逾期数量 -->
-      <tiny-col :span="8">
+      <div class="insight-slot">
         <div class="kc-card kc-card--orange">
-          <span class="kc-corner kc-corner--tl"></span>
-          <span class="kc-corner kc-corner--tr"></span>
-          <span class="kc-corner kc-corner--bl"></span>
-          <span class="kc-corner kc-corner--br"></span>
+          <span class="kc-corner kc-corner--tl" />
+          <span class="kc-corner kc-corner--tr" />
+          <span class="kc-corner kc-corner--bl" />
+          <span class="kc-corner kc-corner--br" />
           <div class="kc-head">
             <div class="kc-icon kc-icon--orange">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.99 2A10 10 0 1 0 22 12 10 10 0 0 0 11.99 2zm.01 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.99 2A10 10 0 1 0 22 12 10 10 0 0 0 11.99 2zm.01 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" /></svg>
             </div>
             <span class="kc-title">本月报警处置逾期数量</span>
           </div>
@@ -81,23 +81,23 @@
             <span class="kc-foot-num">{{ formatNum(monthOverdueWaring.lastYear) }}</span> 条
           </div>
         </div>
-      </tiny-col>
+      </div>
 
       <!-- 本月处置报警数量及处置率 -->
-      <tiny-col :span="8">
+      <div class="insight-slot">
         <div class="kc-card kc-card--green">
-          <span class="kc-corner kc-corner--tl"></span>
-          <span class="kc-corner kc-corner--tr"></span>
-          <span class="kc-corner kc-corner--bl"></span>
-          <span class="kc-corner kc-corner--br"></span>
+          <span class="kc-corner kc-corner--tl" />
+          <span class="kc-corner kc-corner--tr" />
+          <span class="kc-corner kc-corner--bl" />
+          <span class="kc-corner kc-corner--br" />
           <div class="kc-head">
             <div class="kc-icon kc-icon--green">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
             </div>
             <span class="kc-title">本月处置报警数量及处置率</span>
           </div>
           <div class="kc-ring-row">
-            <div ref="ring" class="kc-ring"></div>
+            <div ref="ring" class="kc-ring" />
             <div class="kc-ring-text">
               <div class="kc-value kc-value--green">{{ formatNum(monthHandle.rectificationNum) }}</div>
               <div class="kc-unit">已处置（条）</div>
@@ -108,18 +108,16 @@
             <span class="kc-foot-num" :class="rateColor(monthHandle.rate)">{{ monthHandle.rate }}%</span>
           </div>
         </div>
-      </tiny-col>
-    </tiny-row>
-  </tiny-layout>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import { getMonthHandle, getMonthMajorWaring, getMonthOverdueWaring, getMonthWaring } from '@/api/system/kanban'
 import * as echarts from 'echarts'
-import { Col as TinyCol, Layout as TinyLayout, Row as TinyRow } from '@opentiny/vue'
 
 export default {
-  components: { TinyLayout, TinyRow, TinyCol },
   props: {
     orgIndex: {
       type: String,
@@ -164,6 +162,7 @@ export default {
   },
 
   mounted() {
+    this.$nextTick(() => this.renderRing())
     this.fetchData()
   },
 
@@ -232,7 +231,7 @@ export default {
               shadowBlur: 8
             }
           },
-          axisLine: { lineStyle: { width: 8, color: [[1, '#eef2f7']] } },
+          axisLine: { lineStyle: { width: 8, color: [[1, '#eef2f7']] }},
           splitLine: { show: false },
           axisTick: { show: false },
           axisLabel: { show: false },

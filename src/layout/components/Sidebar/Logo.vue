@@ -1,110 +1,17 @@
 <template>
-  <div class="sidebar-logo-container" :class="{'collapse':collapse}" :style="{ backgroundColor: sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground }">
-    <transition name="sidebarLogoFade">
-      <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 v-else class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{ title }} </h1>
-      </router-link>
-      <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{ title }} </h1>
-      </router-link>
-    </transition>
-  </div>
+  <router-link class="console-brand" to="/" aria-label="easySVA 首页">
+    <span class="brand-symbol"><i class="el-icon-view" /></span>
+    <span v-if="!collapse" class="brand-word">easy<span>SVA</span><small>智能视频分析平台</small></span>
+  </router-link>
 </template>
-
 <script>
-import logoImg from '@/assets/logo/logo.png'
-import variables from '@/assets/styles/variables.scss'
-
-export default {
-  name: 'SidebarLogo',
-  props: {
-    collapse: {
-      type: Boolean,
-      required: true
-    }
-  },
-  data() {
-    return {
-      title: process.env.VUE_APP_TITLE,
-      logo: logoImg
-    }
-  },
-  computed: {
-    variables() {
-      return variables
-    },
-    sideTheme() {
-      return this.$store.state.settings.sideTheme
-    }
-  }
-}
+export default { name: 'SidebarLogo', props: { collapse: { type: Boolean, required: true }}}
 </script>
-
-<style lang="scss" scoped>
-.sidebarLogoFade-enter-active {
-  transition: opacity 1.5s;
-}
-
-.sidebarLogoFade-enter,
-.sidebarLogoFade-leave-to {
-  opacity: 0;
-}
-
-.sidebar-logo-container {
-  position: relative;
-  width: 100%;
-  height: 50px;
-  line-height: 50px;
-  background: #2b2f3a;
-  background: linear-gradient(135deg, #153b60 0%, #0b213b 100%);
-  border-bottom: 1px solid rgba(87, 216, 255, .24);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .18);
-  text-align: center;
-  overflow: hidden;
-
-  &::after {
-    position: absolute;
-    right: -20%;
-    bottom: -28px;
-    width: 80%;
-    height: 50px;
-    background: rgba(87, 216, 255, .16);
-    filter: blur(18px);
-    content: '';
-    pointer-events: none;
-  }
-
-  & .sidebar-logo-link {
-    height: 100%;
-    width: 100%;
-
-    & .sidebar-logo {
-      width: 30px;
-      height: 32px;
-      vertical-align: middle;
-      margin-left: -3px;
-      margin-right: 1px;
-    }
-
-    & .sidebar-title {
-      display: inline-block;
-      margin: 0;
-      color: #fff;
-      font-weight: 600;
-      line-height: 50px;
-      font-size: 14px;
-      text-shadow: 0 0 9px rgba(87, 216, 255, .28);
-      font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
-      vertical-align: middle;
-    }
-  }
-
-  &.collapse {
-    .sidebar-logo {
-      margin-right: 0px;
-    }
-  }
-}
+<style scoped>
+.console-brand { height: 88px; display: flex !important; align-items: center; gap: 11px; padding: 0 24px; color: #f0f5f1; }
+.brand-symbol { width: 33px; height: 33px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #9fbd90; border-radius: 10px; color: #c1dca6; font-size: 23px; }
+.brand-word { font-size: 23px; letter-spacing: -.8px; font-weight: 600; line-height: 1.2; }
+.brand-word > span { color: #bbd4a8; font-weight: 400; }
+.brand-word small { display: block; margin-top: 6px; font-size: 9px; letter-spacing: 2px; font-weight: 400; color: #8ea596; }
+.hideSidebar .console-brand { padding: 0 10px; }
 </style>

@@ -4,6 +4,7 @@ import { getRouters } from '@/api/menu'
 import Layout from '@/layout/index'
 import ParentView from '@/components/ParentView'
 import InnerLink from '@/layout/components/InnerLink'
+import { pruneProductRoutes, orderProductRoutes } from '@/router/productRoutes'
 
 const permission = {
   state: {
@@ -34,8 +35,9 @@ const permission = {
       return new Promise(resolve => {
         // 向后端请求路由数据
         getRouters().then(res => {
-          const sdata = JSON.parse(JSON.stringify(res.data))
-          const rdata = JSON.parse(JSON.stringify(res.data))
+          const productRoutes = orderProductRoutes(pruneProductRoutes(res.data))
+          const sdata = JSON.parse(JSON.stringify(productRoutes))
+          const rdata = JSON.parse(JSON.stringify(productRoutes))
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
